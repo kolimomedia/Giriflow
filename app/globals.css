@@ -1,0 +1,116 @@
+@import "tailwindcss";
+
+:root {
+  --background: #fbfbf7;
+  --surface: #ffffff;
+  --foreground: #0d1f17;
+  --muted: #6b7a72;
+  --subtle: #f1f3ee;
+  --border: #e6e9e1;
+  --border-strong: #d2d8cc;
+
+  /* GiriFlow brand — emerald, drawn from the GiriBooks family */
+  --brand-50: #ecfbf1;
+  --brand-100: #d0f4dd;
+  --brand-200: #a4e7bd;
+  --brand-300: #6dd595;
+  --brand-400: #3cbe72;
+  --brand-500: #1ea356;
+  --brand-600: #138544;
+  --brand-700: #0f6938;
+  --brand-800: #0d522e;
+  --brand-900: #0a3d23;
+
+  --accent: var(--brand-500);
+  --accent-foreground: #ffffff;
+
+  /* Channel hues for the calendar preview */
+  --c-instagram: #d946ef;
+  --c-linkedin: #2563eb;
+  --c-tiktok: #0ea5e9;
+  --c-youtube: #ef4444;
+  --c-x: #0f172a;
+  --c-facebook: #1d4ed8;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-subtle: var(--subtle);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+
+  --color-brand-50: var(--brand-50);
+  --color-brand-100: var(--brand-100);
+  --color-brand-200: var(--brand-200);
+  --color-brand-300: var(--brand-300);
+  --color-brand-400: var(--brand-400);
+  --color-brand-500: var(--brand-500);
+  --color-brand-600: var(--brand-600);
+  --color-brand-700: var(--brand-700);
+  --color-brand-800: var(--brand-800);
+  --color-brand-900: var(--brand-900);
+
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --font-display: var(--font-geist-sans);
+}
+
+html,
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: var(--brand-200);
+  color: var(--brand-900);
+}
+
+/* Subtle grain/noise overlay for the hero — keeps flat backgrounds from feeling sterile. */
+.bg-noise {
+  background-image:
+    radial-gradient(circle at 1px 1px, rgba(13, 31, 23, 0.045) 1px, transparent 0);
+  background-size: 22px 22px;
+}
+
+/* Mesh wash used behind hero and CTA — soft, branded, never loud. */
+.bg-mesh {
+  background:
+    radial-gradient(60% 50% at 15% 10%, rgba(30, 163, 86, 0.12), transparent 60%),
+    radial-gradient(50% 40% at 85% 0%, rgba(109, 213, 149, 0.18), transparent 65%),
+    radial-gradient(40% 35% at 50% 100%, rgba(208, 244, 221, 0.6), transparent 70%);
+}
+
+/* Animated marquee for the channel logo strip */
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+.animate-marquee {
+  animation: marquee 32s linear infinite;
+}
+
+/* Soft float for hero device card */
+@keyframes float-y {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+.animate-float {
+  animation: float-y 6s ease-in-out infinite;
+}
+
+/* Focus rings — match brand */
+:where(a, button, input, textarea, select):focus-visible {
+  outline: 2px solid var(--brand-500);
+  outline-offset: 2px;
+  border-radius: 8px;
+}
