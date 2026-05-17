@@ -93,7 +93,7 @@ export default function HomePage() {
             return (
               <article
                 key={f.title}
-                className="group relative overflow-hidden rounded-2xl border border-border bg-surface p-6 transition hover:-translate-y-1 hover:border-brand-300 hover:shadow-[0_25px_50px_-30px_rgba(13,82,46,0.4)]"
+                className="group relative overflow-hidden rounded-2xl border border-border bg-surface p-6 transition hover:-translate-y-1 hover:border-brand-300 hover:shadow-[0_25px_50px_-30px_rgba(14,47,100,0.4)]"
               >
                 <div className="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-brand-50 opacity-0 transition group-hover:opacity-100" aria-hidden />
                 <div className="relative">
@@ -401,11 +401,11 @@ function CollaborationMock() {
         className="absolute -inset-6 -z-10 rounded-3xl blur-2xl opacity-60"
         style={{
           background:
-            "radial-gradient(50% 60% at 30% 20%, rgba(30,163,86,.18), transparent 70%)",
+            "radial-gradient(50% 60% at 30% 20%, rgba(31,116,241,.18), transparent 70%)",
         }}
         aria-hidden
       />
-      <div className="overflow-hidden rounded-2xl border border-border bg-surface shadow-[0_30px_60px_-30px_rgba(13,82,46,0.35)]">
+      <div className="overflow-hidden rounded-2xl border border-border bg-surface shadow-[0_30px_60px_-30px_rgba(14,47,100,0.35)]">
         <div className="flex items-center justify-between border-b border-border bg-subtle/60 px-4 py-3">
           <div className="flex items-center gap-2">
             <span className="rounded px-1.5 py-0.5 text-[10px] font-semibold" style={{ background: "#fdf4ff", color: "#86198f" }}>IG</span>
@@ -498,12 +498,12 @@ function ExportMock() {
         className="absolute -inset-6 -z-10 rounded-3xl blur-2xl opacity-60"
         style={{
           background:
-            "radial-gradient(50% 60% at 70% 30%, rgba(109,213,149,.25), transparent 70%)",
+            "radial-gradient(50% 60% at 70% 30%, rgba(56,189,248,.30), transparent 70%)",
         }}
         aria-hidden
       />
       {/* PDF card */}
-      <div className="relative mx-auto w-full max-w-md rotate-[-3deg] overflow-hidden rounded-2xl border border-border bg-surface shadow-[0_40px_70px_-30px_rgba(13,82,46,0.4)]">
+      <div className="relative mx-auto w-full max-w-md rotate-[-3deg] overflow-hidden rounded-2xl border border-border bg-surface shadow-[0_40px_70px_-30px_rgba(14,47,100,0.4)]">
         <div className="flex items-center justify-between border-b border-border px-5 py-3">
           <div className="flex items-center gap-2">
             <span className="inline-block h-5 w-5 rounded bg-brand-500" />
@@ -517,7 +517,7 @@ function ExportMock() {
           </div>
           <div className="mt-2 grid grid-cols-7 gap-1">
             {Array.from({ length: 35 }).map((_, i) => {
-              const palette = ["#d946ef", "#0ea5e9", "#1e40af", "#1ea356", "#ef4444"];
+              const palette = ["#d946ef", "#0ea5e9", "#1e40af", "#1f74f1", "#ef4444"];
               const has = i % 3 === 0;
               return (
                 <div key={i} className="aspect-square rounded-md border border-border bg-subtle/40 p-1">
@@ -540,7 +540,7 @@ function ExportMock() {
       </div>
 
       {/* Share link card */}
-      <div className="relative -mt-10 ml-auto w-full max-w-sm rotate-[2deg] overflow-hidden rounded-2xl border border-border bg-surface p-5 shadow-[0_30px_60px_-30px_rgba(13,82,46,0.35)]">
+      <div className="relative -mt-10 ml-auto w-full max-w-sm rotate-[2deg] overflow-hidden rounded-2xl border border-border bg-surface p-5 shadow-[0_30px_60px_-30px_rgba(14,47,100,0.35)]">
         <p className="text-[11px] font-semibold uppercase tracking-wider text-brand-700">Share link</p>
         <div className="mt-3 flex items-center gap-2 rounded-full border border-border bg-subtle/50 px-3 py-2 font-mono text-xs text-foreground/80">
           <span className="text-brand-600">🔗</span>

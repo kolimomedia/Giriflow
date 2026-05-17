@@ -50,12 +50,12 @@ export function CalendarPreview() {
         className="absolute -inset-6 -z-10 rounded-[36px] blur-2xl opacity-70"
         style={{
           background:
-            "radial-gradient(60% 60% at 30% 20%, rgba(30,163,86,.18), transparent 70%), radial-gradient(40% 50% at 80% 80%, rgba(109,213,149,.22), transparent 75%)",
+            "radial-gradient(60% 60% at 30% 20%, rgba(31,116,241,.18), transparent 70%), radial-gradient(40% 50% at 80% 80%, rgba(56,189,248,.22), transparent 75%)",
         }}
         aria-hidden
       />
 
-      <div className="overflow-hidden rounded-2xl border border-border bg-surface shadow-[0_30px_60px_-30px_rgba(13,82,46,0.35)]">
+      <div className="overflow-hidden rounded-2xl border border-border bg-surface shadow-[0_30px_60px_-30px_rgba(14,47,100,0.35)]">
         {/* Window chrome */}
         <div className="flex items-center justify-between border-b border-border bg-subtle/60 px-4 py-3">
           <div className="flex items-center gap-2">
@@ -250,7 +250,7 @@ function MonthGrid() {
               </div>
               <div className="mt-1 flex flex-wrap gap-0.5">
                 {Array.from({ length: dots }).map((_, i) => {
-                  const palette = ["#d946ef", "#0ea5e9", "#1e40af", "#ef4444", "#1ea356"];
+                  const palette = ["#d946ef", "#0ea5e9", "#1e40af", "#ef4444", "#1f74f1"];
                   return (
                     <span
                       key={i}
@@ -327,7 +327,7 @@ function YearStrip() {
             <div className="mt-2 grid grid-cols-7 gap-[2px]">
               {Array.from({ length: 28 }).map((_, k) => {
                 const intensity = (k * 13 + i) % 7;
-                const shades = ["#eef3ee","#d0f4dd","#a4e7bd","#6dd595","#3cbe72","#1ea356","#0f6938"];
+                const shades = ["#eef3fb","#d6e9ff","#afd1ff","#7eb3ff","#4a91ff","#1f74f1","#114aa9"];
                 return (
                   <span
                     key={k}

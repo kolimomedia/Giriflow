@@ -1,30 +1,34 @@
 @import "tailwindcss";
 
 :root {
-  --background: #fbfbf7;
+  --background: #f7faff;
   --surface: #ffffff;
-  --foreground: #0d1f17;
-  --muted: #6b7a72;
-  --subtle: #f1f3ee;
-  --border: #e6e9e1;
-  --border-strong: #d2d8cc;
+  --foreground: #0c1733;
+  --muted: #5f6b85;
+  --subtle: #eef3fb;
+  --border: #dde6f3;
+  --border-strong: #c5d2e6;
 
-  /* GiriFlow brand — emerald, drawn from the GiriBooks family */
-  --brand-50: #ecfbf1;
-  --brand-100: #d0f4dd;
-  --brand-200: #a4e7bd;
-  --brand-300: #6dd595;
-  --brand-400: #3cbe72;
-  --brand-500: #1ea356;
-  --brand-600: #138544;
-  --brand-700: #0f6938;
-  --brand-800: #0d522e;
-  --brand-900: #0a3d23;
+  /* GiriFlow brand — cyan → royal blue, sampled from the brand mark. */
+  --brand-50:  #ecf5ff;
+  --brand-100: #d6e9ff;
+  --brand-200: #afd1ff;
+  --brand-300: #7eb3ff;
+  --brand-400: #4a91ff;
+  --brand-500: #1f74f1;   /* primary action / "Flow" wordmark */
+  --brand-600: #155bd1;
+  --brand-700: #114aa9;
+  --brand-800: #103d85;
+  --brand-900: #0e2f64;
+
+  /* Cyan accent used in the logo gradient */
+  --cyan-400: #38bdf8;
+  --cyan-500: #0ea5e9;
 
   --accent: var(--brand-500);
   --accent-foreground: #ffffff;
 
-  /* Channel hues for the calendar preview */
+  /* Channel hues for the calendar — kept multi-coloured for legibility */
   --c-instagram: #d946ef;
   --c-linkedin: #2563eb;
   --c-tiktok: #0ea5e9;
@@ -53,6 +57,9 @@
   --color-brand-800: var(--brand-800);
   --color-brand-900: var(--brand-900);
 
+  --color-cyan-400: var(--cyan-400);
+  --color-cyan-500: var(--cyan-500);
+
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
 
@@ -75,40 +82,44 @@ body {
   color: var(--brand-900);
 }
 
-/* Subtle grain/noise overlay for the hero — keeps flat backgrounds from feeling sterile. */
+/* Brand gradient — used on the icon and a few hero accents */
+.bg-brand-gradient {
+  background: linear-gradient(135deg, var(--cyan-400) 0%, var(--brand-500) 55%, var(--brand-700) 100%);
+}
+.text-brand-gradient {
+  background: linear-gradient(135deg, var(--cyan-400), var(--brand-500) 60%, var(--brand-700));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Subtle grain/noise overlay for the hero */
 .bg-noise {
   background-image:
-    radial-gradient(circle at 1px 1px, rgba(13, 31, 23, 0.045) 1px, transparent 0);
+    radial-gradient(circle at 1px 1px, rgba(12, 23, 51, 0.045) 1px, transparent 0);
   background-size: 22px 22px;
 }
 
-/* Mesh wash used behind hero and CTA — soft, branded, never loud. */
+/* Mesh wash used behind hero and CTA */
 .bg-mesh {
   background:
-    radial-gradient(60% 50% at 15% 10%, rgba(30, 163, 86, 0.12), transparent 60%),
-    radial-gradient(50% 40% at 85% 0%, rgba(109, 213, 149, 0.18), transparent 65%),
-    radial-gradient(40% 35% at 50% 100%, rgba(208, 244, 221, 0.6), transparent 70%);
+    radial-gradient(60% 50% at 15% 10%, rgba(31, 116, 241, 0.13), transparent 60%),
+    radial-gradient(50% 40% at 85% 0%, rgba(56, 189, 248, 0.20), transparent 65%),
+    radial-gradient(40% 35% at 50% 100%, rgba(214, 233, 255, 0.7), transparent 70%);
 }
 
-/* Animated marquee for the channel logo strip */
 @keyframes marquee {
   from { transform: translateX(0); }
-  to { transform: translateX(-50%); }
+  to   { transform: translateX(-50%); }
 }
-.animate-marquee {
-  animation: marquee 32s linear infinite;
-}
+.animate-marquee { animation: marquee 32s linear infinite; }
 
-/* Soft float for hero device card */
 @keyframes float-y {
   0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-6px); }
+  50%      { transform: translateY(-6px); }
 }
-.animate-float {
-  animation: float-y 6s ease-in-out infinite;
-}
+.animate-float { animation: float-y 6s ease-in-out infinite; }
 
-/* Focus rings — match brand */
 :where(a, button, input, textarea, select):focus-visible {
   outline: 2px solid var(--brand-500);
   outline-offset: 2px;
