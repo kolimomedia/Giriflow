@@ -23,7 +23,7 @@ export default async function PostsPage() {
   const posts = (data ?? []) as Post[];
 
   return (
-    <div className="p-8">
+    <div className="p-4 sm:p-8">
       <div className="mx-auto max-w-5xl">
         <header className="mb-6 flex items-end justify-between">
           <div>
@@ -45,59 +45,106 @@ export default async function PostsPage() {
             </p>
           </div>
         ) : (
-          <div className="overflow-hidden rounded-2xl border border-border bg-surface">
-            <table className="w-full text-sm">
-              <thead className="bg-subtle/50 text-left text-[10px] font-semibold uppercase tracking-widest text-muted">
-                <tr>
-                  <th className="px-4 py-3">Channel</th>
-                  <th className="px-4 py-3">Post</th>
-                  <th className="px-4 py-3">Scheduled</th>
-                  <th className="px-4 py-3">Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {posts.map((p) => {
-                  const m = channelMeta[p.channel];
-                  const s = statusMeta[p.status];
-                  return (
-                    <tr key={p.id} className="border-t border-border">
-                      <td className="px-4 py-3">
+          <>
+            {/* Mobile: card list */}
+            <ul className="space-y-2 sm:hidden">
+              {posts.map((p) => {
+                const m = channelMeta[p.channel];
+                const s = statusMeta[p.status];
+                return (
+                  <li
+                    key={p.id}
+                    className="rounded-xl border border-border bg-surface p-3"
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <span
+                        className="inline-flex items-center gap-1.5 rounded px-1.5 py-0.5 text-[10px] font-semibold"
+                        style={{ background: m.bg, color: m.text }}
+                      >
+                        {m.label}
+                      </span>
+                      <span className="inline-flex items-center gap-1.5 text-[11px] text-foreground/70">
                         <span
-                          className="inline-flex items-center gap-1.5 rounded px-1.5 py-0.5 text-[10px] font-semibold"
-                          style={{ background: m.bg, color: m.text }}
-                        >
-                          {m.label}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3">
-                        <p className="font-medium">{p.title || "(no title)"}</p>
-                        {p.caption && (
-                          <p className="mt-0.5 line-clamp-1 text-xs text-muted">
-                            {p.caption}
-                          </p>
-                        )}
-                      </td>
-                      <td className="px-4 py-3 font-mono text-xs">
-                        {new Date(p.scheduled_at).toLocaleString(undefined, {
-                          dateStyle: "medium",
-                          timeStyle: "short",
-                        })}
-                      </td>
-                      <td className="px-4 py-3">
-                        <span className="inline-flex items-center gap-1.5 text-xs">
+                          className="inline-block h-1.5 w-1.5 rounded-full"
+                          style={{ background: s.dot }}
+                        />
+                        {s.label}
+                      </span>
+                    </div>
+                    <p className="mt-2 text-sm font-medium">
+                      {p.title || "(no title)"}
+                    </p>
+                    {p.caption && (
+                      <p className="mt-0.5 line-clamp-2 text-xs text-muted">
+                        {p.caption}
+                      </p>
+                    )}
+                    <p className="mt-2 font-mono text-[11px] text-muted">
+                      {new Date(p.scheduled_at).toLocaleString(undefined, {
+                        dateStyle: "medium",
+                        timeStyle: "short",
+                      })}
+                    </p>
+                  </li>
+                );
+              })}
+            </ul>
+
+            {/* Tablet+: table */}
+            <div className="hidden overflow-hidden rounded-2xl border border-border bg-surface sm:block">
+              <table className="w-full text-sm">
+                <thead className="bg-subtle/50 text-left text-[10px] font-semibold uppercase tracking-widest text-muted">
+                  <tr>
+                    <th className="px-4 py-3">Channel</th>
+                    <th className="px-4 py-3">Post</th>
+                    <th className="px-4 py-3">Scheduled</th>
+                    <th className="px-4 py-3">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {posts.map((p) => {
+                    const m = channelMeta[p.channel];
+                    const s = statusMeta[p.status];
+                    return (
+                      <tr key={p.id} className="border-t border-border">
+                        <td className="px-4 py-3">
                           <span
-                            className="inline-block h-1.5 w-1.5 rounded-full"
-                            style={{ background: s.dot }}
-                          />
-                          {s.label}
-                        </span>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+                            className="inline-flex items-center gap-1.5 rounded px-1.5 py-0.5 text-[10px] font-semibold"
+                            style={{ background: m.bg, color: m.text }}
+                          >
+                            {m.label}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3">
+                          <p className="font-medium">{p.title || "(no title)"}</p>
+                          {p.caption && (
+                            <p className="mt-0.5 line-clamp-1 text-xs text-muted">
+                              {p.caption}
+                            </p>
+                          )}
+                        </td>
+                        <td className="px-4 py-3 font-mono text-xs">
+                          {new Date(p.scheduled_at).toLocaleString(undefined, {
+                            dateStyle: "medium",
+                            timeStyle: "short",
+                          })}
+                        </td>
+                        <td className="px-4 py-3">
+                          <span className="inline-flex items-center gap-1.5 text-xs">
+                            <span
+                              className="inline-block h-1.5 w-1.5 rounded-full"
+                              style={{ background: s.dot }}
+                            />
+                            {s.label}
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </>
         )}
       </div>
     </div>

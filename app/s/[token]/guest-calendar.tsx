@@ -78,9 +78,10 @@ export function GuestCalendar({
           {DAYS.map((d) => (
             <div
               key={d}
-              className="px-3 py-2 text-[10px] font-semibold uppercase tracking-widest text-muted"
+              className="px-1 py-2 text-center text-[9px] font-semibold uppercase tracking-widest text-muted sm:px-3 sm:text-left sm:text-[10px]"
             >
-              {d}
+              <span className="sm:hidden">{d.slice(0, 1)}</span>
+              <span className="hidden sm:inline">{d}</span>
             </div>
           ))}
         </div>
@@ -93,7 +94,7 @@ export function GuestCalendar({
               <div
                 key={i}
                 className={[
-                  "min-h-[120px] border-b border-r border-border p-2",
+                  "min-h-[64px] border-b border-r border-border p-1 sm:min-h-[120px] sm:p-2",
                   inMonth ? "bg-surface" : "bg-subtle/30",
                   (i + 1) % 7 === 0 ? "border-r-0" : "",
                 ].join(" ")}
@@ -110,7 +111,29 @@ export function GuestCalendar({
                 >
                   {c.date.getUTCDate()}
                 </span>
-                <div className="mt-1 space-y-1">
+                {/* Mobile: colored dots, taps open the post. */}
+                <div className="mt-1 flex flex-wrap gap-0.5 sm:hidden">
+                  {dayPosts.slice(0, 5).map((p) => {
+                    const m = channelMeta[p.channel];
+                    return (
+                      <button
+                        key={p.id}
+                        type="button"
+                        onClick={() => setOpen(p)}
+                        aria-label={p.title || "Post"}
+                        className="inline-block h-1.5 w-1.5 rounded-full"
+                        style={{ background: m.color }}
+                      />
+                    );
+                  })}
+                  {dayPosts.length > 5 && (
+                    <span className="text-[8px] leading-none text-muted">
+                      +{dayPosts.length - 5}
+                    </span>
+                  )}
+                </div>
+                {/* Tablet+: full chips. */}
+                <div className="mt-1 hidden space-y-1 sm:block">
                   {dayPosts.slice(0, 4).map((p) => {
                     const m = channelMeta[p.channel];
                     return (

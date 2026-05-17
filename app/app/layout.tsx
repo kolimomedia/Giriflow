@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { getServerClient } from "@/lib/supabase/server";
-import { Sidebar } from "@/components/app/sidebar";
+import { AppShell } from "@/components/app/app-shell";
 import { loadWorkspaces } from "@/lib/active-workspace";
 import type { Profile, Workspace } from "@/lib/types";
 
@@ -39,14 +39,13 @@ export default async function AppLayout({
     .maybeSingle();
 
   return (
-    <div className="flex min-h-[100dvh] bg-background">
-      <Sidebar
-        user={{ id: user.id, email: user.email ?? "" }}
-        profile={(profile as Profile | null) ?? null}
-        workspace={active}
-        workspaces={list}
-      />
-      <main className="flex-1 overflow-y-auto">{children}</main>
-    </div>
+    <AppShell
+      user={{ id: user.id, email: user.email ?? "" }}
+      profile={(profile as Profile | null) ?? null}
+      workspace={active}
+      workspaces={list}
+    >
+      {children}
+    </AppShell>
   );
 }

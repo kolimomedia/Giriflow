@@ -29,7 +29,7 @@ export default async function SettingsPage() {
     .order("created_at", { ascending: false });
 
   return (
-    <div className="p-8">
+    <div className="p-4 sm:p-8">
       <div className="mx-auto max-w-3xl space-y-8">
         <header>
           <h1 className="text-2xl font-semibold tracking-tight">Settings</h1>

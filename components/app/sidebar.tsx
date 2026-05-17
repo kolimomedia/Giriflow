@@ -12,6 +12,8 @@ type Props = {
   profile: Profile | null;
   workspace: Workspace;
   workspaces: Workspace[];
+  mobileOpen?: boolean;
+  onMobileClose?: () => void;
 };
 
 const items = [
@@ -21,7 +23,14 @@ const items = [
   { href: "/app/settings", label: "Settings", icon: "settings" as const },
 ];
 
-export function Sidebar({ user, profile, workspace, workspaces }: Props) {
+export function Sidebar({
+  user,
+  profile,
+  workspace,
+  workspaces,
+  mobileOpen = false,
+  onMobileClose,
+}: Props) {
   const pathname = usePathname();
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -60,15 +69,25 @@ export function Sidebar({ user, profile, workspace, workspaces }: Props) {
     });
   }
 
-  return (
-    <aside className="flex w-60 shrink-0 flex-col border-r border-border bg-surface">
-      <div className="flex h-16 items-center border-b border-border px-5">
+  const body = (
+    <>
+      <div className="flex h-16 items-center justify-between gap-2 border-b border-border px-5">
         <Link href="/app" className="inline-flex items-center gap-2">
           <LogoMark className="h-7 w-7" />
           <span className="text-base font-semibold tracking-tight">
             Giri<span className="text-brand-500 italic">Flow</span>
           </span>
         </Link>
+        {onMobileClose && (
+          <button
+            type="button"
+            onClick={onMobileClose}
+            aria-label="Close menu"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-full text-muted hover:bg-subtle hover:text-foreground md:hidden"
+          >
+            <CloseIcon />
+          </button>
+        )}
       </div>
 
       {/* Workspace switcher */}
@@ -205,7 +224,61 @@ export function Sidebar({ user, profile, workspace, workspaces }: Props) {
           </button>
         </form>
       </div>
-    </aside>
+    </>
+  );
+
+  return (
+    <>
+      {/* Desktop sidebar */}
+      <aside className="hidden w-60 shrink-0 flex-col border-r border-border bg-surface md:flex">
+        {body}
+      </aside>
+
+      {/* Mobile drawer */}
+      <div
+        className={[
+          "fixed inset-0 z-50 md:hidden",
+          mobileOpen ? "pointer-events-auto" : "pointer-events-none",
+        ].join(" ")}
+        aria-hidden={!mobileOpen}
+      >
+        <div
+          onClick={onMobileClose}
+          className={[
+            "absolute inset-0 bg-foreground/40 transition-opacity",
+            mobileOpen ? "opacity-100" : "opacity-0",
+          ].join(" ")}
+        />
+        <aside
+          role="dialog"
+          aria-modal="true"
+          aria-label="Sidebar"
+          className={[
+            "safe-top absolute left-0 top-0 flex h-full w-72 max-w-[85vw] flex-col border-r border-border bg-surface shadow-[0_20px_50px_-20px_rgba(14,47,100,0.45)] transition-transform",
+            mobileOpen ? "translate-x-0" : "-translate-x-full",
+          ].join(" ")}
+        >
+          {body}
+        </aside>
+      </div>
+    </>
+  );
+}
+
+function CloseIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.7"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="h-4 w-4"
+      aria-hidden
+    >
+      <path d="M6 6l12 12M18 6L6 18" />
+    </svg>
   );
 }
 

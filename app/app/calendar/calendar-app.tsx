@@ -175,11 +175,13 @@ export function CalendarApp({
   }
 
   return (
-    <div className="flex h-[100dvh] flex-col">
+    <div className="flex min-h-0 flex-1 flex-col md:h-[100dvh]">
       {/* Toolbar */}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border bg-surface px-6 py-4">
-        <div className="flex items-center gap-3">
-          <h1 className="text-lg font-semibold tracking-tight">{headerLabel}</h1>
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border bg-surface px-3 py-3 sm:gap-3 sm:px-6 sm:py-4">
+        <div className="flex min-w-0 flex-wrap items-center gap-2 sm:gap-3">
+          <h1 className="truncate text-base font-semibold tracking-tight sm:text-lg">
+            {headerLabel}
+          </h1>
           <div className="inline-flex items-center rounded-full border border-border bg-subtle/50 p-0.5">
             <button
               type="button"
@@ -208,15 +210,15 @@ export function CalendarApp({
           {pending && <span className="text-xs text-muted">…</span>}
         </div>
 
-        <div className="flex items-center gap-2">
-          <div className="inline-flex rounded-full border border-border bg-subtle/50 p-1">
+        <div className="flex w-full items-center gap-2 sm:w-auto">
+          <div className="inline-flex flex-1 justify-center rounded-full border border-border bg-subtle/50 p-1 sm:flex-none">
             {(["day", "week", "month", "year"] as View[]).map((v) => (
               <button
                 key={v}
                 type="button"
                 onClick={() => setView(v)}
                 className={[
-                  "rounded-full px-3 py-1.5 text-xs font-medium capitalize transition",
+                  "flex-1 rounded-full px-2.5 py-1.5 text-xs font-medium capitalize transition sm:flex-none sm:px-3",
                   view === v
                     ? "bg-surface text-foreground shadow-sm"
                     : "text-muted hover:text-foreground",
@@ -230,23 +232,26 @@ export function CalendarApp({
             type="button"
             onClick={openPrint}
             title="Print or save as PDF"
-            className="inline-flex h-9 items-center gap-1.5 rounded-full border border-border bg-surface px-3 text-xs font-medium text-foreground/85 hover:border-brand-300 hover:text-brand-700"
+            aria-label="Export PDF"
+            className="inline-flex h-9 shrink-0 items-center justify-center gap-1.5 rounded-full border border-border bg-surface px-2.5 text-xs font-medium text-foreground/85 hover:border-brand-300 hover:text-brand-700 sm:px-3"
           >
             <PdfIcon />
-            Export PDF
+            <span className="hidden sm:inline">Export PDF</span>
           </button>
           <button
             type="button"
             onClick={() => setCreating({ at: combineDateAndTime(new Date(), "10:00") })}
-            className="inline-flex h-9 items-center gap-1.5 rounded-full bg-foreground px-3 text-xs font-medium text-background hover:bg-brand-700"
+            aria-label="New post"
+            className="inline-flex h-9 shrink-0 items-center justify-center gap-1.5 rounded-full bg-foreground px-3 text-xs font-medium text-background hover:bg-brand-700"
           >
-            <span aria-hidden>＋</span> New post
+            <span aria-hidden>＋</span>
+            <span className="hidden sm:inline">New post</span>
           </button>
         </div>
       </div>
 
       {/* Body */}
-      <div className="flex-1 overflow-auto p-4">
+      <div className="flex-1 overflow-auto p-2 sm:p-4">
         {view === "day" && (
           <DayView
             day={activeDay}
@@ -403,7 +408,7 @@ function WeekView({
   const todayKey = ymd(new Date());
 
   return (
-    <div className="grid grid-cols-7 gap-2">
+    <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-7">
       {days.map((d) => {
         const dayPosts = postsOn(posts, d);
         const isToday = ymd(d) === todayKey;
@@ -414,7 +419,7 @@ function WeekView({
             onDrop={onDrop}
             draggingId={draggingId}
             className={[
-              "flex min-h-[420px] flex-col rounded-2xl border bg-surface p-2",
+              "flex min-h-[180px] flex-col rounded-2xl border bg-surface p-2 md:min-h-[420px]",
               isToday ? "border-brand-300 ring-1 ring-brand-200" : "border-border",
             ].join(" ")}
           >
@@ -502,9 +507,10 @@ function MonthView({
         {DAYS.map((d) => (
           <div
             key={d}
-            className="px-3 py-2 text-[10px] font-semibold uppercase tracking-widest text-muted"
+            className="px-1 py-2 text-center text-[9px] font-semibold uppercase tracking-widest text-muted sm:px-3 sm:text-left sm:text-[10px]"
           >
-            {d}
+            <span className="sm:hidden">{d.slice(0, 1)}</span>
+            <span className="hidden sm:inline">{d}</span>
           </div>
         ))}
       </div>
@@ -520,34 +526,62 @@ function MonthView({
               onDrop={onDrop}
               draggingId={draggingId}
               className={[
-                "group relative min-h-[120px] border-b border-r border-border p-2",
+                "group relative min-h-[64px] border-b border-r border-border p-1 sm:min-h-[120px] sm:p-2",
                 inMonth ? "bg-surface" : "bg-subtle/30",
                 (i + 1) % 7 === 0 ? "border-r-0" : "",
               ].join(" ")}
             >
               <div className="mb-1 flex items-center justify-between">
-                <span
-                  className={[
-                    "inline-flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-semibold",
-                    isToday
-                      ? "bg-brand-500 text-white"
-                      : inMonth
-                        ? "text-foreground/70"
-                        : "text-muted",
-                  ].join(" ")}
-                >
-                  {c.date.getUTCDate()}
-                </span>
                 <button
                   type="button"
                   onClick={() => onCellClick(c.date)}
-                  className="rounded-full p-1 text-muted opacity-0 transition group-hover:opacity-100 hover:bg-brand-50 hover:text-brand-700"
+                  aria-label={`Add post on ${ymd(c.date)}`}
+                  className={[
+                    "inline-flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-semibold transition",
+                    isToday
+                      ? "bg-brand-500 text-white"
+                      : inMonth
+                        ? "text-foreground/70 hover:bg-subtle"
+                        : "text-muted hover:bg-subtle",
+                  ].join(" ")}
+                >
+                  {c.date.getUTCDate()}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onCellClick(c.date)}
+                  className="hidden rounded-full p-1 text-muted opacity-0 transition group-hover:opacity-100 hover:bg-brand-50 hover:text-brand-700 sm:inline-flex"
                   aria-label={`Add post on ${ymd(c.date)}`}
                 >
                   <PlusIcon />
                 </button>
               </div>
-              <div className="space-y-1">
+              {/* Mobile: just colored dots — full chips don't fit at 7 cols on phones. */}
+              <div className="flex flex-wrap gap-0.5 sm:hidden">
+                {dayPosts.slice(0, 5).map((p) => {
+                  const meta = channelMeta[p.channel];
+                  return (
+                    <button
+                      key={p.id}
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onPostClick(p);
+                      }}
+                      aria-label={p.title || "Post"}
+                      className="inline-block h-1.5 w-1.5 rounded-full"
+                      style={{ background: meta.color }}
+                    />
+                  );
+                })}
+                {dayPosts.length > 5 && (
+                  <span className="text-[8px] leading-none text-muted">
+                    +{dayPosts.length - 5}
+                  </span>
+                )}
+              </div>
+              {/* Tablet/desktop: full chips. */}
+              <div className="hidden space-y-1 sm:block">
                 {dayPosts.slice(0, 3).map((p) => (
                   <PostChip
                     key={p.id}

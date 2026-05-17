@@ -77,6 +77,24 @@ body {
   text-rendering: optimizeLegibility;
 }
 
+html {
+  /* Prevent iOS Safari from inflating text on rotation. */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  /* Allow content to flow under the notch when chrome opts in. */
+  overflow-x: hidden;
+}
+
+/* iOS safe-area helpers (notch / home-indicator). */
+.safe-top    { padding-top:    env(safe-area-inset-top); }
+.safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
+.safe-left   { padding-left:   env(safe-area-inset-left); }
+.safe-right  { padding-right:  env(safe-area-inset-right); }
+.safe-x      { padding-left:   env(safe-area-inset-left); padding-right: env(safe-area-inset-right); }
+
 ::selection {
   background: var(--brand-200);
   color: var(--brand-900);
