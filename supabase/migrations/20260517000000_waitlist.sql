@@ -3,28 +3,24 @@
 
 create extension if not exists "pgcrypto";
 
+-- citext lives in a dedicated `extensions` schema (Supabase best practice).
+create schema if not exists extensions;
+create extension if not exists "citext" with schema extensions;
+
 create table if not exists public.waitlist (
   id          uuid primary key default gen_random_uuid(),
-  email       citext not null,
+  email       text not null,
   source      text,
   referrer    text,
   user_agent  text,
   created_at  timestamptz not null default now()
 );
 
--- Email should be unique once normalised; citext handles case-insensitive equality.
-create extension if not exists "citext";
-do $$
-begin
-  if not exists (
-    select 1 from pg_indexes
-    where schemaname = 'public' and indexname = 'waitlist_email_key'
-  ) then
-    create unique index waitlist_email_key on public.waitlist (email);
-  end if;
-end$$;
+-- Case-insensitive uniqueness via expression index. App normalises with
+-- toLowerCase() before insert, but this protects against direct SQL paths.
+create unique index if not exists waitlist_email_lower_key
+  on public.waitlist (lower(email));
 
--- RLS: anyone (anon) can insert their own row; nobody can read except service_role.
 alter table public.waitlist enable row level security;
 
 drop policy if exists "anyone can join waitlist" on public.waitlist;
@@ -32,9 +28,12 @@ create policy "anyone can join waitlist"
   on public.waitlist
   for insert
   to anon, authenticated
-  with check (true);
+  with check (
+    char_length(email) between 5 and 254
+    and email ~* '^[^@[:space:]]+@[^@[:space:]]+\.[^@[:space:]]+$'
+  );
 
--- No select / update / delete policies on purpose — only the service_role
+-- No SELECT / UPDATE / DELETE policies on purpose — only the service_role
 -- (used in admin tooling or edge functions) can read or modify the list.
 
 comment on table public.waitlist is 'Early-access signups from the marketing site.';
