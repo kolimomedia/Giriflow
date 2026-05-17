@@ -1,15 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Suspense } from "react";
-import { LoginForm } from "./login-form";
 import { LogoMark } from "@/components/logo";
+import { ForgotPasswordForm } from "./forgot-form";
 
 export const metadata: Metadata = {
-  title: "Sign in",
-  description: "Sign in to your GiriFlow workspace.",
+  title: "Reset password",
+  description: "Reset the password on your GiriFlow account.",
 };
 
-export default function LoginPage() {
+export default function ForgotPasswordPage() {
   return (
     <section className="relative isolate flex min-h-[calc(100vh-4rem)] items-center justify-center overflow-hidden px-6 py-16">
       <div className="absolute inset-0 -z-10 bg-mesh" aria-hidden />
@@ -20,43 +19,25 @@ export default function LoginPage() {
           <div className="flex flex-col items-center text-center">
             <LogoMark className="h-12 w-12" />
             <h1 className="mt-6 text-2xl font-semibold tracking-tight">
-              Welcome to GiriFlow
+              Reset your password
             </h1>
             <p className="mt-2 text-sm text-foreground/70">
-              Sign in to your workspace, or create a new account.
+              Enter your email and we'll send a reset link.
             </p>
           </div>
 
           <div className="mt-8">
-            <Suspense
-              fallback={
-                <div className="h-12 w-full animate-pulse rounded-full bg-subtle" />
-              }
-            >
-              <LoginForm />
-            </Suspense>
+            <ForgotPasswordForm />
           </div>
-
-          <p className="mt-8 text-center text-xs text-muted">
-            By continuing you agree to our{" "}
-            <Link href="/terms" className="underline hover:text-foreground">
-              terms
-            </Link>{" "}
-            and{" "}
-            <Link href="/privacy" className="underline hover:text-foreground">
-              privacy policy
-            </Link>
-            .
-          </p>
         </div>
 
         <p className="mt-6 text-center text-sm text-foreground/70">
-          New to GiriFlow?{" "}
+          Remembered it?{" "}
           <Link
-            href="/#waitlist"
+            href="/login"
             className="font-medium text-brand-700 hover:text-brand-800"
           >
-            Join the waitlist
+            Back to sign in
           </Link>
         </p>
       </div>
