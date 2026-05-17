@@ -1,7 +1,8 @@
 import { redirect } from "next/navigation";
 import { getServerClient } from "@/lib/supabase/server";
 import { Sidebar } from "@/components/app/sidebar";
-import type { Workspace } from "@/lib/types";
+import { loadWorkspaces } from "@/lib/active-workspace";
+import type { Profile, Workspace } from "@/lib/types";
 
 export const metadata = {
   title: "App",
@@ -18,31 +19,31 @@ export default async function AppLayout({
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  // Pull the user's workspaces (RLS scopes this automatically).
-  const { data: workspaces } = await supabase
-    .from("workspaces")
-    .select("id, name, owner_id, created_at")
-    .order("created_at", { ascending: true });
+  let { list, active } = await loadWorkspaces();
 
-  const list = (workspaces ?? []) as Workspace[];
-
-  // The signup trigger should have created a workspace already, but fall
-  // back gracefully if it didn't.
-  let activeWorkspace = list[0];
-  if (!activeWorkspace) {
+  // Defensive fallback if the signup trigger never ran.
+  if (!active) {
     const { data: ws } = await supabase
       .from("workspaces")
       .insert({ name: "My workspace", owner_id: user.id })
       .select()
       .single();
-    activeWorkspace = ws as Workspace;
+    active = ws as Workspace;
+    list = [active];
   }
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("user_id", user.id)
+    .maybeSingle();
 
   return (
     <div className="flex min-h-[100dvh] bg-background">
       <Sidebar
         user={{ id: user.id, email: user.email ?? "" }}
-        workspace={activeWorkspace}
+        profile={(profile as Profile | null) ?? null}
+        workspace={active}
         workspaces={list}
       />
       <main className="flex-1 overflow-y-auto">{children}</main>

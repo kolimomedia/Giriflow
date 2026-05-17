@@ -1,14 +1,25 @@
+import { redirect } from "next/navigation";
 import { getServerClient } from "@/lib/supabase/server";
+import { loadWorkspaces } from "@/lib/active-workspace";
 import { channelMeta, statusMeta } from "@/lib/channels";
 import type { Post } from "@/lib/types";
 
 export default async function PostsPage() {
   const supabase = await getServerClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
+
+  const { active: workspace } = await loadWorkspaces();
+  if (!workspace) return null;
+
   const { data } = await supabase
     .from("posts")
     .select("*")
+    .eq("workspace_id", workspace.id)
     .order("scheduled_at", { ascending: false })
-    .limit(100);
+    .limit(200);
   const posts = (data ?? []) as Post[];
 
   return (
@@ -18,7 +29,7 @@ export default async function PostsPage() {
           <div>
             <h1 className="text-2xl font-semibold tracking-tight">Posts</h1>
             <p className="mt-1 text-sm text-muted">
-              Everything scheduled, drafted, or shipped — newest first.
+              All posts in <strong>{workspace.name}</strong> — newest first.
             </p>
           </div>
         </header>
