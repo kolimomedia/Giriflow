@@ -1,9 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import { Nav } from "@/components/nav";
-import { Footer } from "@/components/footer";
 import { site } from "@/lib/site";
-import { getCurrentUser } from "@/lib/auth";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -58,19 +55,21 @@ export const viewport: Viewport = {
   themeColor: "#f7faff",
 };
 
-export default async function RootLayout({
+/**
+ * Root layout — only what every route needs. The marketing site shell
+ * (Nav + Footer) lives in app/(marketing)/layout.tsx, and the dashboard
+ * shell (Sidebar + Topbar) lives in app/app/layout.tsx.
+ */
+export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  const user = await getCurrentUser();
   return (
     <html
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full`}
     >
       <body className="min-h-[100dvh] flex flex-col bg-background text-foreground">
-        <Nav user={user} />
-        <main className="flex-1">{children}</main>
-        <Footer />
+        {children}
       </body>
     </html>
   );

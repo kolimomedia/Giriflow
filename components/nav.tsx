@@ -122,9 +122,9 @@ export function Nav({ user }: { user: CurrentUser | null }) {
                   <Link
                     href="/app/calendar"
                     onClick={() => setOpen(false)}
-                    className="inline-flex h-11 items-center justify-center rounded-full bg-foreground text-sm font-medium text-background"
+                    className="rounded-xl px-3 py-3 text-base text-foreground/85 hover:bg-subtle"
                   >
-                    Open app
+                    Calendar
                   </Link>
                   <Link
                     href="/app/profile"
@@ -224,7 +224,7 @@ function UserMenu({ user }: { user: CurrentUser }) {
             )}
           </div>
           <MenuLink href="/app/calendar" onSelect={() => setOpen(false)}>
-            Open app
+            Calendar
           </MenuLink>
           <MenuLink href="/app/profile" onSelect={() => setOpen(false)}>
             Profile
