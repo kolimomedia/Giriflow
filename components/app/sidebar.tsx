@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LogoMark } from "@/components/logo";
+import { LogoWordmark } from "@/components/logo";
 
 type Props = {
   mobileOpen?: boolean;
@@ -26,11 +26,8 @@ export function Sidebar({ mobileOpen = false, onMobileClose }: Props) {
   const body = (
     <>
       <div className="flex h-16 items-center justify-between gap-2 border-b border-border px-5">
-        <Link href="/app" className="inline-flex items-center gap-2">
-          <LogoMark className="h-7 w-7" />
-          <span className="text-base font-semibold tracking-tight">
-            Giri<span className="text-brand-500 italic">Flow</span>
-          </span>
+        <Link href="/app" aria-label="GiriFlow — home" className="inline-flex items-center">
+          <LogoWordmark width={120} />
         </Link>
         {onMobileClose && (
           <button

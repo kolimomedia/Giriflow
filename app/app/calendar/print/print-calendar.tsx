@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { channelMeta } from "@/lib/channels";
-import { LogoMarkFlat } from "@/components/logo";
+import { LogoWordmark } from "@/components/logo";
 import type { Post } from "@/lib/types";
 
 const MONTHS = [
@@ -62,12 +62,9 @@ export function PrintCalendar({
             {workspaceName} — {MONTHS[month0]} {year}
           </h1>
         </div>
-        <div className="flex items-center gap-2 text-right">
-          <LogoMarkFlat className="h-10 w-10" />
-          <div>
-            <p className="text-sm font-semibold">GiriFlow</p>
-            <p className="text-[10px] text-muted">giriflow.com</p>
-          </div>
+        <div className="flex flex-col items-end gap-1 text-right">
+          <LogoWordmark width={140} priority={false} />
+          <p className="text-[10px] text-muted">giriflow.com</p>
         </div>
       </header>
 
