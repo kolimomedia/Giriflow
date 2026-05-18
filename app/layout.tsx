@@ -43,9 +43,7 @@ export const metadata: Metadata = {
     title: `${site.name} — ${site.tagline}`,
     description: site.description,
   },
-  icons: {
-    icon: "/icon.svg",
-  },
+  // Next.js auto-discovers app/icon.png as the favicon; no need to list it here.
 };
 
 export const viewport: Viewport = {
