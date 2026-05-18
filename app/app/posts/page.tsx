@@ -2,7 +2,8 @@ import { redirect } from "next/navigation";
 import { getServerClient } from "@/lib/supabase/server";
 import { loadWorkspaces } from "@/lib/active-workspace";
 import { channelIds, statusIds, type ChannelId, type PostStatus } from "@/lib/channels";
-import { PostsBrowser, type SortKey, SORT_KEYS } from "./posts-browser";
+import { PostsBrowser } from "./posts-browser";
+import { SORT_KEYS, type SortKey } from "./sort-keys";
 import type { EnrichedPost } from "@/lib/types";
 
 type SP = {

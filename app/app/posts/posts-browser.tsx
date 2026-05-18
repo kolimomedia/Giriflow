@@ -6,21 +6,7 @@ import { useRouter } from "next/navigation";
 import { channelMeta, channelIds, statusMeta, statusIds, type ChannelId, type PostStatus } from "@/lib/channels";
 import type { EnrichedPost } from "@/lib/types";
 import { PostPreviewModal } from "./post-preview-modal";
-
-export const SORT_KEYS = [
-  "scheduled-desc",
-  "scheduled-asc",
-  "created-desc",
-  "updated-desc",
-] as const;
-export type SortKey = (typeof SORT_KEYS)[number];
-
-const SORT_LABELS: Record<SortKey, string> = {
-  "scheduled-desc": "Scheduled · latest first",
-  "scheduled-asc": "Scheduled · earliest first",
-  "created-desc": "Recently added",
-  "updated-desc": "Recently updated",
-};
+import { SORT_KEYS, SORT_LABELS, type SortKey } from "./sort-keys";
 
 type Props = {
   posts: EnrichedPost[];
