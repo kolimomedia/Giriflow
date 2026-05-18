@@ -125,6 +125,11 @@ export function PrintCalendar({
                         <p className="mt-1 line-clamp-2 text-[10px] font-medium leading-snug">
                           {p.title || p.caption.slice(0, 40) || "Post"}
                         </p>
+                        {p.reference_links && p.reference_links.length > 0 && (
+                          <p className="mt-0.5 text-[8px] text-muted">
+                            🔗 {p.reference_links.length}
+                          </p>
+                        )}
                       </div>
                     );
                   })}

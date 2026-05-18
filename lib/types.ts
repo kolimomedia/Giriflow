@@ -7,6 +7,11 @@ export type Workspace = {
   created_at: string;
 };
 
+export type ReferenceLink = {
+  url: string;
+  label?: string;
+};
+
 export type Post = {
   id: string;
   workspace_id: string;
@@ -15,6 +20,7 @@ export type Post = {
   caption: string;
   scheduled_at: string;
   status: PostStatus;
+  reference_links: ReferenceLink[];
   created_by: string;
   created_at: string;
   updated_at: string;

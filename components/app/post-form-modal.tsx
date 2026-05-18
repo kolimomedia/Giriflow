@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { channelMeta, channelIds, statusIds, statusMeta } from "@/lib/channels";
-import type { Post, PostComment } from "@/lib/types";
+import type { Post, PostComment, ReferenceLink } from "@/lib/types";
 import { createComment, deleteComment, listComments } from "@/app/app/calendar/actions";
 
 type Props = {
@@ -16,6 +16,7 @@ type Props = {
     caption: string;
     scheduled_at: string;
     status: string;
+    reference_links: ReferenceLink[];
   }) => Promise<void>;
   onDelete?: () => Promise<void>;
   onApprove?: () => Promise<void>;
@@ -42,6 +43,9 @@ export function PostFormModal({
       : (defaultScheduledAt ?? new Date());
     return toLocalInput(d);
   });
+  const [links, setLinks] = useState<ReferenceLink[]>(
+    initial?.reference_links ?? [],
+  );
   const [busy, setBusy] = useState<"" | "save" | "delete" | "approve">("");
   const [error, setError] = useState<string | null>(null);
 
@@ -66,6 +70,7 @@ export function PostFormModal({
         caption,
         scheduled_at,
         status,
+        reference_links: links,
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Save failed");
@@ -197,6 +202,10 @@ export function PostFormModal({
                 <div className="mt-1 text-right text-[10px] text-muted">
                   {caption.length}/5000
                 </div>
+              </Field>
+
+              <Field label="Reference links (optional)">
+                <ReferenceLinksEditor value={links} onChange={setLinks} />
               </Field>
 
               <div className="grid grid-cols-2 gap-3">
@@ -422,6 +431,212 @@ function CommentsPanel({ post }: { post: Post }) {
         </p>
       )}
     </div>
+  );
+}
+
+function ReferenceLinksEditor({
+  value,
+  onChange,
+}: {
+  value: ReferenceLink[];
+  onChange: (next: ReferenceLink[]) => void;
+}) {
+  const [draftUrl, setDraftUrl] = useState("");
+  const [draftLabel, setDraftLabel] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const MAX_LINKS = 20;
+
+  function add(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+    const url = normalizeUrl(draftUrl);
+    if (!url) {
+      setError("Enter a valid http(s) URL.");
+      return;
+    }
+    if (value.length >= MAX_LINKS) {
+      setError(`Up to ${MAX_LINKS} links per post.`);
+      return;
+    }
+    if (value.some((l) => l.url === url)) {
+      setError("That link is already on the list.");
+      return;
+    }
+    const label = draftLabel.trim().slice(0, 120);
+    onChange([...value, label ? { url, label } : { url }]);
+    setDraftUrl("");
+    setDraftLabel("");
+  }
+
+  function remove(idx: number) {
+    onChange(value.filter((_, i) => i !== idx));
+  }
+
+  return (
+    <div>
+      {value.length > 0 && (
+        <ul className="mb-2 space-y-1.5">
+          {value.map((link, idx) => (
+            <li
+              key={`${link.url}-${idx}`}
+              className="flex items-center gap-2 rounded-lg border border-border bg-subtle/40 px-3 py-2"
+            >
+              <LinkIcon />
+              <div className="min-w-0 flex-1">
+                {link.label && (
+                  <p className="truncate text-xs font-medium text-foreground/85">
+                    {link.label}
+                  </p>
+                )}
+                <a
+                  href={link.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block truncate font-mono text-[10px] text-brand-700 hover:text-brand-800"
+                  title={link.url}
+                >
+                  {hostname(link.url)}
+                  <span className="text-muted">{pathOf(link.url)}</span>
+                </a>
+              </div>
+              <button
+                type="button"
+                onClick={() => remove(idx)}
+                aria-label={`Remove ${link.url}`}
+                className="rounded-full p-1 text-muted hover:bg-surface hover:text-red-600"
+              >
+                <XIcon />
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {/* Use a div with role=form (not a real <form>) so Enter inside doesn't
+          submit the parent post form. */}
+      <div
+        role="group"
+        className="flex flex-wrap items-stretch gap-1.5 rounded-lg border border-dashed border-border-strong/70 bg-subtle/20 p-1.5"
+      >
+        <input
+          type="url"
+          inputMode="url"
+          value={draftUrl}
+          onChange={(e) => {
+            setDraftUrl(e.target.value);
+            if (error) setError(null);
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              add(e);
+            }
+          }}
+          placeholder="https://figma.com/file/…"
+          maxLength={2000}
+          className="h-9 min-w-[180px] flex-[2] rounded-md border border-border bg-surface px-2.5 text-sm placeholder:text-muted focus:border-brand-400"
+        />
+        <input
+          type="text"
+          value={draftLabel}
+          onChange={(e) => setDraftLabel(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              add(e);
+            }
+          }}
+          placeholder="Label (optional)"
+          maxLength={120}
+          className="h-9 min-w-[120px] flex-1 rounded-md border border-border bg-surface px-2.5 text-sm placeholder:text-muted focus:border-brand-400"
+        />
+        <button
+          type="button"
+          onClick={add}
+          disabled={!draftUrl.trim()}
+          className="inline-flex h-9 items-center gap-1 rounded-md bg-foreground px-3 text-xs font-medium text-background transition hover:bg-brand-700 disabled:opacity-50"
+        >
+          <span aria-hidden>＋</span> Add
+        </button>
+      </div>
+
+      {error ? (
+        <p role="alert" className="mt-1 text-[10px] text-red-600">
+          {error}
+        </p>
+      ) : (
+        <p className="mt-1 text-[10px] text-muted">
+          Attach research, brand assets, or any URL you want the team to see
+          alongside this post. {MAX_LINKS - value.length} of {MAX_LINKS} slots
+          left.
+        </p>
+      )}
+    </div>
+  );
+}
+
+function normalizeUrl(raw: string): string | null {
+  const trimmed = raw.trim();
+  if (!trimmed) return null;
+  const candidate = /^[a-zA-Z]+:\/\//.test(trimmed) ? trimmed : `https://${trimmed}`;
+  try {
+    const parsed = new URL(candidate);
+    if (parsed.protocol !== "http:" && parsed.protocol !== "https:") return null;
+    if (!parsed.hostname.includes(".")) return null;
+    return parsed.toString();
+  } catch {
+    return null;
+  }
+}
+
+function hostname(url: string): string {
+  try {
+    return new URL(url).hostname.replace(/^www\./, "");
+  } catch {
+    return url;
+  }
+}
+
+function pathOf(url: string): string {
+  try {
+    const u = new URL(url);
+    const p = u.pathname + (u.search || "");
+    return p === "/" ? "" : p;
+  } catch {
+    return "";
+  }
+}
+
+function LinkIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.7"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="h-3.5 w-3.5 shrink-0 text-muted"
+    >
+      <path d="M10 14a4 4 0 005.66 0l3-3a4 4 0 10-5.66-5.66l-1 1" />
+      <path d="M14 10a4 4 0 00-5.66 0l-3 3a4 4 0 105.66 5.66l1-1" />
+    </svg>
+  );
+}
+
+function XIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.7"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="h-3.5 w-3.5"
+    >
+      <path d="M6 6l12 12M18 6L6 18" />
+    </svg>
   );
 }
 

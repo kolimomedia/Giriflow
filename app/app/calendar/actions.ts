@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { getServerClient } from "@/lib/supabase/server";
 import { channelIds, statusIds, type ChannelId, type PostStatus } from "@/lib/channels";
+import type { ReferenceLink } from "@/lib/types";
 
 type CreateInput = {
   workspace_id: string;
@@ -11,9 +12,32 @@ type CreateInput = {
   caption: string;
   scheduled_at: string;
   status: string;
+  reference_links?: ReferenceLink[];
 };
 
 type UpdateInput = CreateInput & { id: string };
+
+function normalizeLinks(input: unknown): ReferenceLink[] {
+  if (!Array.isArray(input)) return [];
+  const out: ReferenceLink[] = [];
+  for (const raw of input.slice(0, 20)) {
+    if (!raw || typeof raw !== "object") continue;
+    const obj = raw as Record<string, unknown>;
+    const url = typeof obj.url === "string" ? obj.url.trim().slice(0, 2000) : "";
+    if (!url) continue;
+    // Must be http/https — block javascript: and other schemes.
+    try {
+      const parsed = new URL(url);
+      if (parsed.protocol !== "http:" && parsed.protocol !== "https:") continue;
+    } catch {
+      continue;
+    }
+    const labelRaw = typeof obj.label === "string" ? obj.label.trim() : "";
+    const label = labelRaw ? labelRaw.slice(0, 120) : undefined;
+    out.push(label ? { url, label } : { url });
+  }
+  return out;
+}
 
 function normalize(input: CreateInput) {
   if (!channelIds.includes(input.channel as ChannelId)) {
@@ -29,6 +53,7 @@ function normalize(input: CreateInput) {
     caption: input.caption.trim().slice(0, 5000),
     scheduled_at: input.scheduled_at,
     status: input.status as PostStatus,
+    reference_links: normalizeLinks(input.reference_links),
   };
 }
 

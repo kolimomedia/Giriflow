@@ -214,6 +214,34 @@ function PostPreview({ post, onClose }: { post: Post; onClose: () => void }) {
               {post.caption}
             </p>
           )}
+          {post.reference_links && post.reference_links.length > 0 && (
+            <div>
+              <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-widest text-muted">
+                References
+              </p>
+              <ul className="space-y-1">
+                {post.reference_links.map((link, idx) => (
+                  <li key={`${link.url}-${idx}`}>
+                    <a
+                      href={link.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 rounded-lg border border-border bg-subtle/40 px-2.5 py-1.5 text-xs hover:border-brand-300"
+                    >
+                      <span
+                        className="truncate font-medium text-foreground/85"
+                      >
+                        {link.label || hostFromUrl(link.url)}
+                      </span>
+                      <span className="ml-auto truncate font-mono text-[10px] text-muted">
+                        {hostFromUrl(link.url)}
+                      </span>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
           <p className="font-mono text-xs text-muted">
             Scheduled for{" "}
             {new Date(post.scheduled_at).toLocaleString(undefined, {
@@ -225,6 +253,14 @@ function PostPreview({ post, onClose }: { post: Post; onClose: () => void }) {
       </div>
     </div>
   );
+}
+
+function hostFromUrl(url: string): string {
+  try {
+    return new URL(url).hostname.replace(/^www\./, "");
+  } catch {
+    return url;
+  }
 }
 
 function buildMonthCells(year: number, month0: number): { date: Date }[] {
