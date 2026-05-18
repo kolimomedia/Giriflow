@@ -6,8 +6,10 @@ type Variant = "default" | "mark";
 const MARK_SRC = "/giriflow-mark-square.png";
 const WORDMARK_SRC = "/giriflow-wordmark.png";
 
-// Wordmark PNG natural ratio = 1200 × 320 (3.75:1).
-const WORDMARK_RATIO = 3.75;
+// Wordmark PNG natural ratio = 1240 × 440 (≈2.82:1).
+// The PNG is cropped with extra top/bottom breathing room so the
+// accent marks on the i's never clip at small render sizes.
+const WORDMARK_RATIO = 1240 / 440;
 
 /**
  * Branded GiriFlow logo for the main header / footer / sidebar / print
