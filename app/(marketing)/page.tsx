@@ -17,11 +17,11 @@ export default function HomePage() {
           <div className="grid items-center gap-14 lg:grid-cols-[1.05fr_1fr]">
             <div>
               <Link
-                href="#waitlist"
-                className="inline-flex items-center gap-2 rounded-full border border-border bg-surface/80 px-3 py-1.5 text-xs font-medium text-foreground/80 backdrop-blur"
+                href="/login?mode=signup"
+                className="inline-flex items-center gap-2 rounded-full border border-border bg-surface/80 px-3 py-1.5 text-xs font-medium text-foreground/80 backdrop-blur transition hover:border-brand-300 hover:text-brand-700"
               >
                 <span className="inline-flex h-1.5 w-1.5 rounded-full bg-brand-500" />
-                Now in early access — join the waitlist
+                Free 14-day trial · no credit card
                 <span aria-hidden>→</span>
               </Link>
 
@@ -37,10 +37,10 @@ export default function HomePage() {
 
               <div className="mt-10 flex flex-wrap items-center gap-3">
                 <Link
-                  href="#waitlist"
+                  href="/login?mode=signup"
                   className="inline-flex h-12 items-center gap-2 rounded-full bg-foreground px-6 text-sm font-medium text-background transition hover:bg-brand-700"
                 >
-                  Start planning free
+                  Start your free trial
                   <span aria-hidden>→</span>
                 </Link>
                 <Link
@@ -50,6 +50,9 @@ export default function HomePage() {
                   See how it works
                 </Link>
               </div>
+              <p className="mt-3 text-xs text-muted">
+                14 days of the full Studio plan. No credit card. Cancel anytime.
+              </p>
 
               <dl className="mt-12 grid max-w-md grid-cols-3 gap-6 border-t border-border pt-8">
                 <Stat label="Channels" value="6+" />
@@ -301,22 +304,22 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* WAITLIST CTA */}
+      {/* TRIAL CTA */}
       <section
-        id="waitlist"
+        id="trial"
         className="relative isolate overflow-hidden border-t border-border"
       >
         <div className="absolute inset-0 -z-10 bg-mesh" aria-hidden />
         <div className="mx-auto max-w-4xl px-6 py-24 text-center lg:px-10">
           <p className="font-mono text-xs uppercase tracking-widest text-brand-700">
-            Early access
+            {site.trial.headline}
           </p>
           <h2 className="mt-4 text-balance text-4xl font-semibold leading-tight tracking-tight md:text-5xl">
-            Stop planning in spreadsheets. Start planning in flow.
+            Try GiriFlow free for {site.trial.days} days.
           </h2>
           <p className="mt-5 text-lg text-foreground/75">
-            Drop your email. We're letting people in weekly — early users get a
-            year of Studio at half price.
+            The whole Studio plan, unlocked. Plan a month with your team or a
+            client, and decide if it's worth it. {site.trial.sub}
           </p>
 
           <div className="mt-8 flex justify-center">
@@ -324,7 +327,12 @@ export default function HomePage() {
           </div>
 
           <p className="mt-6 text-xs text-muted">
-            We'll only email you about {site.name}. Unsubscribe in one click.
+            Drop your email — we'll take you to a passwordless sign-up. Already
+            have an account?{" "}
+            <Link href="/login" className="font-medium text-brand-700 hover:text-brand-800">
+              Sign in
+            </Link>
+            .
           </p>
         </div>
       </section>

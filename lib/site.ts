@@ -4,7 +4,12 @@ export const site = {
   url: "https://giriflow.com",
   tagline: "Plan your social, together.",
   description:
-    "GiriFlow is the social media planner for teams, agencies, and solo creators. Draft the week, review the month, and ship the year — with clients and teammates in the loop.",
+    "The social media planner for teams, agencies and solo creators. Draft the week, review the month, ship the year — with clients and teammates in the loop. Free 14-day trial, no card required.",
+  trial: {
+    days: 14,
+    headline: "Free for 14 days",
+    sub: "No credit card. Cancel anytime.",
+  },
   family: {
     label: "Part of the Giri family",
     siblings: [
@@ -62,7 +67,7 @@ export const features = [
   },
   {
     title: "Guest-safe share links",
-    body: "Send a read-only link to a client. They see the plan; they don't see your other accounts.",
+    body: "Send a read-only link to a client. They see the plan, leave comments under their name, and never see your other accounts.",
     icon: "link",
   },
   {
@@ -132,7 +137,7 @@ export const faqs = [
   },
   {
     q: "Can clients leave comments without an account?",
-    a: "Yes. Share-links open in a guest view where clients can comment, approve or request changes — no sign-up required.",
+    a: "Yes. Share-links open in a guest view where clients enter their name once and can comment, approve or request changes — no sign-up required.",
   },
   {
     q: "What does the PDF export look like?",
@@ -145,6 +150,10 @@ export const faqs = [
   {
     q: "How is this different from a spreadsheet?",
     a: "Spreadsheets show rows; calendars show rhythm. GiriFlow shows the cadence of your brand — and lets two people work on it at once without overwriting each other.",
+  },
+  {
+    q: "What does the free trial include?",
+    a: "Everything in the Studio plan for 14 days — unlimited workspaces, channels, guest comments, branded PDF export, the works. No credit card required to start; pick a plan whenever you're ready.",
   },
   {
     q: "What about my GiriBooks account?",
@@ -165,6 +174,7 @@ export const pricingTiers = [
       "PDF export (watermarked)",
     ],
     cta: "Start free",
+    href: "/login?mode=signup",
     highlight: false,
   },
   {
@@ -173,14 +183,15 @@ export const pricingTiers = [
     cadence: "per editor / month",
     summary: "For small teams and freelancers with clients.",
     features: [
-      "Unlimited workspaces",
-      "Unlimited channels",
+      "14-day free trial · no card required",
+      "Unlimited workspaces & channels",
       "Year view + recurring slots",
       "Guest share-links with comments",
       "Branded PDF export",
       "Role-based permissions",
     ],
     cta: "Start 14-day trial",
+    href: "/login?mode=signup",
     highlight: true,
   },
   {
@@ -196,6 +207,7 @@ export const pricingTiers = [
       "Dedicated CSM",
     ],
     cta: "Book a call",
+    href: "/contact",
     highlight: false,
   },
 ] as const;

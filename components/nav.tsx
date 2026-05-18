@@ -56,10 +56,10 @@ export function Nav({ user }: { user: CurrentUser | null }) {
                 Sign in
               </Link>
               <Link
-                href="/#waitlist"
+                href="/login?mode=signup"
                 className="inline-flex h-10 items-center gap-2 rounded-full bg-foreground px-5 text-sm font-medium text-background transition hover:bg-brand-700"
               >
-                Get early access
+                Start free trial
                 <span aria-hidden>→</span>
               </Link>
             </>
@@ -159,11 +159,11 @@ export function Nav({ user }: { user: CurrentUser | null }) {
                     Sign in
                   </Link>
                   <Link
-                    href="/#waitlist"
+                    href="/login?mode=signup"
                     onClick={() => setOpen(false)}
                     className="inline-flex h-11 items-center justify-center rounded-full bg-foreground text-sm font-medium text-background"
                   >
-                    Get early access
+                    Start free trial
                   </Link>
                 </>
               )}

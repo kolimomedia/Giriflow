@@ -102,16 +102,16 @@ export default function AboutPage() {
 
       <section className="mx-auto max-w-4xl px-6 py-16 text-center lg:px-10">
         <h2 className="text-balance text-3xl font-semibold leading-tight tracking-tight md:text-4xl">
-          Want to try it before it's public?
+          Try GiriFlow today — free for 14 days.
         </h2>
         <p className="mt-4 text-foreground/70">
-          We're letting people in weekly. First taste is on us.
+          Full Studio plan. No credit card. Cancel anytime.
         </p>
         <Link
-          href="/#waitlist"
+          href="/login?mode=signup"
           className="mt-8 inline-flex h-12 items-center gap-2 rounded-full bg-foreground px-6 text-sm font-medium text-background transition hover:bg-brand-700"
         >
-          Join the waitlist
+          Start your free trial
           <span aria-hidden>→</span>
         </Link>
       </section>

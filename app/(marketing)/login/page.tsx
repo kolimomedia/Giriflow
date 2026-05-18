@@ -23,7 +23,7 @@ export default function LoginPage() {
               Welcome to GiriFlow
             </h1>
             <p className="mt-2 text-sm text-foreground/70">
-              Sign in to your workspace, or create a new account.
+              Sign in to your workspace — or start your free 14-day trial.
             </p>
           </div>
 
@@ -53,10 +53,10 @@ export default function LoginPage() {
         <p className="mt-6 text-center text-sm text-foreground/70">
           New to GiriFlow?{" "}
           <Link
-            href="/#waitlist"
+            href="/login?mode=signup"
             className="font-medium text-brand-700 hover:text-brand-800"
           >
-            Join the waitlist
+            Start your free trial
           </Link>
         </p>
       </div>

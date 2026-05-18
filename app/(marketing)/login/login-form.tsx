@@ -17,7 +17,7 @@ export function LoginForm() {
   const initialMode: Mode = params.get("mode") === "signup" ? "signup" : "signin";
 
   const [mode, setMode] = useState<Mode>(initialMode);
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(() => params.get("email") ?? "");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [state, setState] = useState<State>("idle");

@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getServerClient } from "@/lib/supabase/server";
-import { GuestCalendar } from "./guest-calendar";
+import { GuestCalendar, type GuestComment, type GuestLink } from "./guest-calendar";
 import { LogoMark } from "@/components/logo";
 import type { Post, Workspace } from "@/lib/types";
 
@@ -14,8 +14,9 @@ type SharePayload =
   | { expired: true }
   | {
       workspace: Workspace;
-      link: { id: string; name: string; allow_comments: boolean; expires_at: string | null };
+      link: GuestLink;
       posts: Post[];
+      comments: GuestComment[];
     };
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -42,7 +43,7 @@ export default async function SharedCalendarPage({
   if (!payload) notFound();
   if ("expired" in payload) return <ExpiredView />;
 
-  const { workspace, posts } = payload;
+  const { workspace, posts, comments, link } = payload;
 
   const [yStr, mStr] = (sp.month ?? "").split("-");
   const now = new Date();
@@ -59,6 +60,7 @@ export default async function SharedCalendarPage({
               <p className="text-sm font-semibold leading-tight">{workspace.name}</p>
               <p className="text-[10px] uppercase tracking-widest text-muted">
                 Shared via GiriFlow · read-only
+                {link.allow_comments ? " · comments open" : ""}
               </p>
             </div>
           </div>
@@ -73,7 +75,10 @@ export default async function SharedCalendarPage({
 
       <main className="flex-1 p-4 sm:p-8">
         <GuestCalendar
+          token={token}
           posts={posts}
+          comments={comments}
+          link={link}
           initialYear={year}
           initialMonth0={month0}
           workspaceName={workspace.name}

@@ -68,7 +68,7 @@ export default function PricingPage() {
               </ul>
 
               <Link
-                href="/#waitlist"
+                href={tier.href}
                 className={[
                   "mt-8 inline-flex h-12 items-center justify-center gap-2 rounded-full px-6 text-sm font-medium transition",
                   tier.highlight

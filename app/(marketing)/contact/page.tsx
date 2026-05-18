@@ -48,17 +48,18 @@ export default function ContactPage() {
         </div>
 
         <div className="rounded-2xl border border-border bg-surface p-8">
-          <h2 className="text-xl font-semibold tracking-tight">Or — drop your email</h2>
+          <h2 className="text-xl font-semibold tracking-tight">
+            Or jump straight in
+          </h2>
           <p className="mt-2 text-sm text-foreground/70">
-            We'll add you to the early-access list and reach out as we onboard
-            your cohort.
+            Try GiriFlow free for 14 days. No credit card required — drop your
+            email and we'll take you to sign-up.
           </p>
           <div className="mt-6">
             <WaitlistForm />
           </div>
           <p className="mt-4 text-xs text-muted">
-            By submitting, you agree to occasional product emails. Unsubscribe
-            anytime.
+            You can cancel any time. We'll only email you about your account.
           </p>
         </div>
       </section>

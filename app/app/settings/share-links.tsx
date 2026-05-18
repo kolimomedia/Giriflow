@@ -142,7 +142,7 @@ export function ShareLinks({
             onChange={(e) => setAllowComments(e.target.checked)}
             className="h-4 w-4 rounded border-border accent-brand-500"
           />
-          Allow guests to leave comments (coming soon — reads only for now)
+          Allow guests to leave comments (they'll be asked for a name)
         </label>
       </form>
 
