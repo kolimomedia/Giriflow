@@ -2,9 +2,9 @@ import { redirect } from "next/navigation";
 import { getServerClient } from "@/lib/supabase/server";
 import { loadWorkspaces } from "@/lib/active-workspace";
 import { CalendarApp } from "./calendar-app";
-import type { Post } from "@/lib/types";
+import type { EnrichedPost } from "@/lib/types";
 
-type SP = { month?: string };
+type SP = { month?: string; post?: string };
 
 export default async function CalendarPage({
   searchParams,
@@ -33,24 +33,37 @@ export default async function CalendarPage({
   const now = new Date();
   const year = Number(yStr) || now.getUTCFullYear();
   const month0 = (Number(mStr) || now.getUTCMonth() + 1) - 1;
-  // Load a year-wide window so the year view + ±1 month navigation are local.
+  // Load a year-wide window so the year view + month nav are local.
   const windowStart = new Date(Date.UTC(year, 0, 1));
   const windowEnd = new Date(Date.UTC(year + 1, 0, 1));
 
-  const { data: posts } = await supabase
+  // Use Supabase's foreign-table count aggregate so each post comes with
+  // its comments_count in a single round-trip.
+  const { data } = await supabase
     .from("posts")
-    .select("*")
+    .select("*, post_comments(count)")
     .eq("workspace_id", workspace.id)
     .gte("scheduled_at", windowStart.toISOString())
     .lt("scheduled_at", windowEnd.toISOString())
     .order("scheduled_at", { ascending: true });
 
+  const posts: EnrichedPost[] = (data ?? []).map((row) => {
+    const { post_comments, ...rest } = row as Record<string, unknown> & {
+      post_comments?: { count: number }[];
+    };
+    return {
+      ...(rest as EnrichedPost),
+      comments_count: post_comments?.[0]?.count ?? 0,
+    };
+  });
+
   return (
     <CalendarApp
       workspace={workspace}
-      initialPosts={(posts ?? []) as Post[]}
+      initialPosts={posts}
       initialYear={year}
       initialMonth0={month0}
+      openPostId={sp.post}
     />
   );
 }

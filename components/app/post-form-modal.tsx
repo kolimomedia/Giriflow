@@ -358,9 +358,41 @@ function CommentsPanel({ post }: { post: Post }) {
     }
   }
 
+  const refs = post.reference_links ?? [];
+
   return (
     <div className="flex max-h-[60vh] flex-col">
       <div className="flex-1 overflow-y-auto p-6">
+        {refs.length > 0 && (
+          <div className="mb-5 rounded-xl border border-border bg-subtle/40 p-3">
+            <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-muted">
+              References for this post
+            </p>
+            <ul className="space-y-1">
+              {refs.map((link, idx) => (
+                <li key={`${link.url}-${idx}`}>
+                  <a
+                    href={link.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 rounded-lg border border-border bg-surface px-2.5 py-1.5 text-xs hover:border-brand-300"
+                  >
+                    <span aria-hidden>🔗</span>
+                    <span className="truncate font-medium text-foreground/85">
+                      {link.label || hostname(link.url)}
+                    </span>
+                    {link.label && (
+                      <span className="truncate font-mono text-[10px] text-muted">
+                        · {hostname(link.url)}
+                      </span>
+                    )}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
         {comments === null ? (
           <p className="text-sm text-muted">Loading…</p>
         ) : comments.length === 0 ? (

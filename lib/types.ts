@@ -26,6 +26,11 @@ export type Post = {
   updated_at: string;
 };
 
+/** Post + cheap aggregates rendered on chips / list rows. */
+export type EnrichedPost = Post & {
+  comments_count: number;
+};
+
 export type Profile = {
   user_id: string;
   display_name: string | null;

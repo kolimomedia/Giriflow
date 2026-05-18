@@ -1,9 +1,9 @@
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { channelMeta, statusMeta } from "@/lib/channels";
-import type { Post, Workspace } from "@/lib/types";
+import type { EnrichedPost, Workspace } from "@/lib/types";
 import { PostFormModal } from "@/components/app/post-form-modal";
 import {
   approvePost,
@@ -17,9 +17,10 @@ type View = "day" | "week" | "month" | "year";
 
 type Props = {
   workspace: Workspace;
-  initialPosts: Post[];
+  initialPosts: EnrichedPost[];
   initialYear: number;
   initialMonth0: number;
+  openPostId?: string;
 };
 
 const MONTH_NAMES = [
@@ -33,9 +34,10 @@ export function CalendarApp({
   initialPosts,
   initialYear,
   initialMonth0,
+  openPostId,
 }: Props) {
   const router = useRouter();
-  const [posts, setPosts] = useState<Post[]>(initialPosts);
+  const [posts, setPosts] = useState<EnrichedPost[]>(initialPosts);
   const [view, setView] = useState<View>("month");
   const [year, setYear] = useState(initialYear);
   const [month0, setMonth0] = useState(initialMonth0);
@@ -43,9 +45,23 @@ export function CalendarApp({
   const [weekStart, setWeekStart] = useState<Date>(() => startOfWeek(new Date()));
   const [pending, startTransition] = useTransition();
 
-  const [editing, setEditing] = useState<Post | null>(null);
+  const [editing, setEditing] = useState<EnrichedPost | null>(null);
   const [creating, setCreating] = useState<{ at: Date } | null>(null);
   const [draggingId, setDraggingId] = useState<string | null>(null);
+
+  // Open a post when arrived via /app/calendar?post=<id> (from the Posts page).
+  useEffect(() => {
+    if (!openPostId) return;
+    const target = initialPosts.find((p) => p.id === openPostId);
+    if (target) {
+      setEditing(target);
+      // Scroll the month containing the post into view.
+      const d = new Date(target.scheduled_at);
+      setYear(d.getUTCFullYear());
+      setMonth0(d.getUTCMonth());
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [openPostId]);
 
   function navigate(delta: number) {
     if (view === "day") {
@@ -94,14 +110,24 @@ export function CalendarApp({
     caption: string;
     scheduled_at: string;
     status: string;
+    reference_links: { url: string; label?: string }[];
   }) {
     const payload = { ...form, workspace_id: workspace.id };
     if (form.id) {
       const updated = await updatePost({ ...payload, id: form.id });
-      setPosts((p) => p.map((x) => (x.id === form.id ? (updated as Post) : x)));
+      setPosts((p) =>
+        p.map((x) =>
+          x.id === form.id
+            ? { ...x, ...(updated as Partial<EnrichedPost>) }
+            : x,
+        ),
+      );
     } else {
       const created = await createPost(payload);
-      setPosts((p) => [...p, created as Post]);
+      setPosts((p) => [
+        ...p,
+        { ...(created as EnrichedPost), comments_count: 0 },
+      ]);
     }
     setEditing(null);
     setCreating(null);
@@ -115,13 +141,21 @@ export function CalendarApp({
 
   async function handleApprove(id: string) {
     const updated = await approvePost(id);
-    setPosts((p) => p.map((x) => (x.id === id ? (updated as Post) : x)));
-    if (editing?.id === id) setEditing(updated as Post);
+    setPosts((p) =>
+      p.map((x) =>
+        x.id === id ? { ...x, ...(updated as Partial<EnrichedPost>) } : x,
+      ),
+    );
+    if (editing?.id === id) {
+      setEditing(
+        (prev) =>
+          prev && { ...prev, ...(updated as Partial<EnrichedPost>) },
+      );
+    }
   }
 
   async function handleDrop(targetDate: Date, postId: string) {
     const ymdStr = ymd(targetDate);
-    // Optimistic update: move the post's time-of-day to the new date.
     setPosts((p) =>
       p.map((x) => {
         if (x.id !== postId) return x;
@@ -142,7 +176,6 @@ export function CalendarApp({
     try {
       await reschedulePost(postId, ymdStr);
     } catch {
-      // Roll back on error by refetching — simplest.
       router.refresh();
     }
   }
@@ -165,7 +198,7 @@ export function CalendarApp({
   }, [view, activeDay, month0, year, weekStart]);
 
   function openPrint() {
-    const y = view === "year" ? year : year;
+    const y = year;
     const m = view === "year" ? 0 : month0;
     window.open(
       `/app/calendar/print?month=${y}-${String(m + 1).padStart(2, "0")}`,
@@ -232,8 +265,7 @@ export function CalendarApp({
             type="button"
             onClick={openPrint}
             title="Print or save as PDF"
-            aria-label="Export PDF"
-            className="inline-flex h-9 shrink-0 items-center justify-center gap-1.5 rounded-full border border-border bg-surface px-2.5 text-xs font-medium text-foreground/85 hover:border-brand-300 hover:text-brand-700 sm:px-3"
+            className="inline-flex h-9 items-center gap-1.5 rounded-full border border-border bg-surface px-3 text-xs font-medium text-foreground/85 hover:border-brand-300 hover:text-brand-700"
           >
             <PdfIcon />
             <span className="hidden sm:inline">Export PDF</span>
@@ -241,8 +273,7 @@ export function CalendarApp({
           <button
             type="button"
             onClick={() => setCreating({ at: combineDateAndTime(new Date(), "10:00") })}
-            aria-label="New post"
-            className="inline-flex h-9 shrink-0 items-center justify-center gap-1.5 rounded-full bg-foreground px-3 text-xs font-medium text-background hover:bg-brand-700"
+            className="inline-flex h-9 items-center gap-1.5 rounded-full bg-foreground px-3 text-xs font-medium text-background hover:bg-brand-700"
           >
             <span aria-hidden>＋</span>
             <span className="hidden sm:inline">New post</span>
@@ -251,7 +282,7 @@ export function CalendarApp({
       </div>
 
       {/* Body */}
-      <div className="flex-1 overflow-auto p-2 sm:p-4">
+      <div className="flex-1 overflow-auto p-3 sm:p-4">
         {view === "day" && (
           <DayView
             day={activeDay}
@@ -330,16 +361,15 @@ function DayView({
   onPostClick,
 }: {
   day: Date;
-  posts: Post[];
+  posts: EnrichedPost[];
   onCellClick: (d: Date) => void;
-  onPostClick: (p: Post) => void;
+  onPostClick: (p: EnrichedPost) => void;
 }) {
   const dayPosts = postsOn(posts, day);
-  // 18 hourly slots from 6am → midnight to cover most posting windows.
   const slots = Array.from({ length: 18 }, (_, i) => i + 6);
 
   return (
-    <div className="mx-auto max-w-2xl">
+    <div className="mx-auto max-w-3xl">
       <div className="rounded-2xl border border-border bg-surface">
         {slots.map((hour) => {
           const slotStart = combineDateAndTime(day, `${String(hour).padStart(2, "0")}:00`);
@@ -358,7 +388,7 @@ function DayView({
               >
                 {String(hour).padStart(2, "0")}:00
               </button>
-              <div className="flex flex-wrap gap-2 p-2">
+              <div className="space-y-2 p-2">
                 {slotPosts.length === 0 ? (
                   <button
                     type="button"
@@ -369,7 +399,12 @@ function DayView({
                   </button>
                 ) : (
                   slotPosts.map((p) => (
-                    <PostChip key={p.id} post={p} onClick={() => onPostClick(p)} expanded />
+                    <PostChip
+                      key={p.id}
+                      post={p}
+                      onClick={() => onPostClick(p)}
+                      density="rich"
+                    />
                   ))
                 )}
               </div>
@@ -393,9 +428,9 @@ function WeekView({
   setDraggingId,
 }: {
   weekStart: Date;
-  posts: Post[];
+  posts: EnrichedPost[];
   onCellClick: (d: Date) => void;
-  onPostClick: (p: Post) => void;
+  onPostClick: (p: EnrichedPost) => void;
   onDrop: (date: Date, postId: string) => void;
   draggingId: string | null;
   setDraggingId: (id: string | null) => void;
@@ -408,7 +443,7 @@ function WeekView({
   const todayKey = ymd(new Date());
 
   return (
-    <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-7">
+    <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-7">
       {days.map((d) => {
         const dayPosts = postsOn(posts, d);
         const isToday = ymd(d) === todayKey;
@@ -419,7 +454,7 @@ function WeekView({
             onDrop={onDrop}
             draggingId={draggingId}
             className={[
-              "flex min-h-[180px] flex-col rounded-2xl border bg-surface p-2 md:min-h-[420px]",
+              "flex min-h-[420px] flex-col rounded-2xl border bg-surface p-2",
               isToday ? "border-brand-300 ring-1 ring-brand-200" : "border-border",
             ].join(" ")}
           >
@@ -455,6 +490,7 @@ function WeekView({
                   key={p.id}
                   post={p}
                   onClick={() => onPostClick(p)}
+                  density="detailed"
                   draggable
                   onDragStart={() => setDraggingId(p.id)}
                   onDragEnd={() => setDraggingId(null)}
@@ -491,9 +527,9 @@ function MonthView({
 }: {
   year: number;
   month0: number;
-  posts: Post[];
+  posts: EnrichedPost[];
   onCellClick: (d: Date) => void;
-  onPostClick: (p: Post) => void;
+  onPostClick: (p: EnrichedPost) => void;
   onDrop: (date: Date, postId: string) => void;
   draggingId: string | null;
   setDraggingId: (id: string | null) => void;
@@ -507,10 +543,9 @@ function MonthView({
         {DAYS.map((d) => (
           <div
             key={d}
-            className="px-1 py-2 text-center text-[9px] font-semibold uppercase tracking-widest text-muted sm:px-3 sm:text-left sm:text-[10px]"
+            className="px-3 py-2 text-[10px] font-semibold uppercase tracking-widest text-muted"
           >
-            <span className="sm:hidden">{d.slice(0, 1)}</span>
-            <span className="hidden sm:inline">{d}</span>
+            {d}
           </div>
         ))}
       </div>
@@ -526,68 +561,40 @@ function MonthView({
               onDrop={onDrop}
               draggingId={draggingId}
               className={[
-                "group relative min-h-[64px] border-b border-r border-border p-1 sm:min-h-[120px] sm:p-2",
+                "group relative min-h-[130px] border-b border-r border-border p-2",
                 inMonth ? "bg-surface" : "bg-subtle/30",
                 (i + 1) % 7 === 0 ? "border-r-0" : "",
               ].join(" ")}
             >
               <div className="mb-1 flex items-center justify-between">
-                <button
-                  type="button"
-                  onClick={() => onCellClick(c.date)}
-                  aria-label={`Add post on ${ymd(c.date)}`}
+                <span
                   className={[
-                    "inline-flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-semibold transition",
+                    "inline-flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-semibold",
                     isToday
                       ? "bg-brand-500 text-white"
                       : inMonth
-                        ? "text-foreground/70 hover:bg-subtle"
-                        : "text-muted hover:bg-subtle",
+                        ? "text-foreground/70"
+                        : "text-muted",
                   ].join(" ")}
                 >
                   {c.date.getUTCDate()}
-                </button>
+                </span>
                 <button
                   type="button"
                   onClick={() => onCellClick(c.date)}
-                  className="hidden rounded-full p-1 text-muted opacity-0 transition group-hover:opacity-100 hover:bg-brand-50 hover:text-brand-700 sm:inline-flex"
+                  className="rounded-full p-1 text-muted opacity-0 transition group-hover:opacity-100 hover:bg-brand-50 hover:text-brand-700"
                   aria-label={`Add post on ${ymd(c.date)}`}
                 >
                   <PlusIcon />
                 </button>
               </div>
-              {/* Mobile: just colored dots — full chips don't fit at 7 cols on phones. */}
-              <div className="flex flex-wrap gap-0.5 sm:hidden">
-                {dayPosts.slice(0, 5).map((p) => {
-                  const meta = channelMeta[p.channel];
-                  return (
-                    <button
-                      key={p.id}
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onPostClick(p);
-                      }}
-                      aria-label={p.title || "Post"}
-                      className="inline-block h-1.5 w-1.5 rounded-full"
-                      style={{ background: meta.color }}
-                    />
-                  );
-                })}
-                {dayPosts.length > 5 && (
-                  <span className="text-[8px] leading-none text-muted">
-                    +{dayPosts.length - 5}
-                  </span>
-                )}
-              </div>
-              {/* Tablet/desktop: full chips. */}
-              <div className="hidden space-y-1 sm:block">
+              <div className="space-y-1">
                 {dayPosts.slice(0, 3).map((p) => (
                   <PostChip
                     key={p.id}
                     post={p}
                     onClick={() => onPostClick(p)}
-                    compact
+                    density="compact"
                     draggable
                     onDragStart={() => setDraggingId(p.id)}
                     onDragEnd={() => setDraggingId(null)}
@@ -607,7 +614,7 @@ function MonthView({
   );
 }
 
-/* ── Year view (heatmap) ──────────────────────────────────────────────── */
+/* ── Year view ────────────────────────────────────────────────────────── */
 
 function YearView({
   year,
@@ -615,10 +622,9 @@ function YearView({
   onPickMonth,
 }: {
   year: number;
-  posts: Post[];
+  posts: EnrichedPost[];
   onPickMonth: (m: number) => void;
 }) {
-  // Count posts per day across the whole year.
   const counts = useMemo(() => {
     const map = new Map<string, number>();
     for (const p of posts) {
@@ -677,7 +683,6 @@ function YearView({
 }
 
 function heatShade(count: number): string {
-  // Brand-tinted heatmap.
   if (count === 0) return "#eef3fb";
   if (count === 1) return "#d6e9ff";
   if (count === 2) return "#afd1ff";
@@ -687,21 +692,21 @@ function heatShade(count: number): string {
   return "#114aa9";
 }
 
-/* ── Shared bits ──────────────────────────────────────────────────────── */
+/* ── Post chip — three densities ──────────────────────────────────────── */
+
+type Density = "compact" | "detailed" | "rich";
 
 function PostChip({
   post,
   onClick,
-  compact = false,
-  expanded = false,
+  density,
   draggable,
   onDragStart,
   onDragEnd,
 }: {
-  post: Post;
+  post: EnrichedPost;
   onClick: () => void;
-  compact?: boolean;
-  expanded?: boolean;
+  density: Density;
   draggable?: boolean;
   onDragStart?: () => void;
   onDragEnd?: () => void;
@@ -713,54 +718,184 @@ function PostChip({
     minute: "2-digit",
     hour12: false,
   });
+  const linkCount = post.reference_links?.length ?? 0;
+  const commentCount = post.comments_count ?? 0;
+
+  // Compact (month view): tight, 1-line, with subtle counters.
+  if (density === "compact") {
+    return (
+      <button
+        type="button"
+        onClick={onClick}
+        draggable={draggable}
+        onDragStart={(e) => {
+          if (!draggable) return;
+          e.dataTransfer.effectAllowed = "move";
+          e.dataTransfer.setData("text/plain", post.id);
+          onDragStart?.();
+        }}
+        onDragEnd={() => onDragEnd?.()}
+        className="group/chip w-full rounded-md border-l-2 bg-white/70 px-2 py-1.5 text-left transition hover:-translate-y-0.5 hover:shadow-sm"
+        style={{ borderColor: meta.color }}
+      >
+        <div className="flex items-center justify-between gap-2">
+          <span
+            className="rounded px-1.5 py-0.5 text-[9px] font-semibold tracking-wide"
+            style={{ background: meta.bg, color: meta.text }}
+          >
+            {meta.short}
+          </span>
+          <span className="font-mono text-[10px] text-muted">{time}</span>
+        </div>
+        <p className="mt-1 line-clamp-1 text-[11px] font-medium leading-snug text-foreground/90">
+          {post.title || post.caption || "Untitled post"}
+        </p>
+        {(linkCount > 0 || commentCount > 0) && (
+          <div className="mt-0.5 flex items-center gap-2 text-[9px] text-muted">
+            <span
+              className="inline-block h-1.5 w-1.5 rounded-full"
+              style={{ background: status.dot }}
+            />
+            {linkCount > 0 && (
+              <span className="inline-flex items-center gap-0.5">
+                <LinkGlyph /> {linkCount}
+              </span>
+            )}
+            {commentCount > 0 && (
+              <span className="inline-flex items-center gap-0.5">
+                <CommentGlyph /> {commentCount}
+              </span>
+            )}
+          </div>
+        )}
+      </button>
+    );
+  }
+
+  // Detailed (week view): more info — channel name, 2-line caption preview,
+  // status pill, counters.
+  if (density === "detailed") {
+    return (
+      <button
+        type="button"
+        onClick={onClick}
+        draggable={draggable}
+        onDragStart={(e) => {
+          if (!draggable) return;
+          e.dataTransfer.effectAllowed = "move";
+          e.dataTransfer.setData("text/plain", post.id);
+          onDragStart?.();
+        }}
+        onDragEnd={() => onDragEnd?.()}
+        className="block w-full rounded-lg border border-l-[3px] border-border bg-white text-left transition hover:-translate-y-0.5 hover:shadow-[0_15px_30px_-20px_rgba(14,47,100,0.4)]"
+        style={{ borderLeftColor: meta.color }}
+      >
+        <div className="flex items-center justify-between gap-2 border-b border-border px-2.5 py-1.5">
+          <span
+            className="rounded px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide"
+            style={{ background: meta.bg, color: meta.text }}
+          >
+            {meta.label}
+          </span>
+          <span className="font-mono text-[10px] text-muted">{time}</span>
+        </div>
+        <div className="px-2.5 py-2">
+          {post.title && (
+            <p className="line-clamp-1 text-[12px] font-semibold leading-snug">
+              {post.title}
+            </p>
+          )}
+          {post.caption && (
+            <p
+              className={[
+                "text-[10.5px] leading-snug text-foreground/70",
+                post.title ? "mt-0.5 line-clamp-2" : "line-clamp-3",
+              ].join(" ")}
+            >
+              {post.caption}
+            </p>
+          )}
+          <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+            <StatusPill status={post.status} />
+            {linkCount > 0 && (
+              <span className="inline-flex items-center gap-0.5 rounded-full bg-subtle/60 px-1.5 py-0.5 text-[9px] text-foreground/70">
+                <LinkGlyph /> {linkCount}
+              </span>
+            )}
+            {commentCount > 0 && (
+              <span className="inline-flex items-center gap-0.5 rounded-full bg-subtle/60 px-1.5 py-0.5 text-[9px] text-foreground/70">
+                <CommentGlyph /> {commentCount}
+              </span>
+            )}
+          </div>
+        </div>
+      </button>
+    );
+  }
+
+  // Rich (day view): big card with everything.
   return (
     <button
       type="button"
       onClick={onClick}
-      draggable={draggable}
-      onDragStart={(e) => {
-        if (!draggable) return;
-        e.dataTransfer.effectAllowed = "move";
-        e.dataTransfer.setData("text/plain", post.id);
-        onDragStart?.();
-      }}
-      onDragEnd={() => onDragEnd?.()}
-      className={[
-        "w-full rounded-md border-l-2 bg-white/70 text-left transition hover:-translate-y-0.5 hover:shadow-sm",
-        expanded ? "px-3 py-2" : "px-2 py-1.5",
-        draggable ? "cursor-grab active:cursor-grabbing" : "",
-      ].join(" ")}
-      style={{ borderColor: meta.color }}
+      className="block w-full rounded-xl border border-l-[3px] border-border bg-white text-left transition hover:-translate-y-0.5 hover:shadow-[0_20px_40px_-25px_rgba(14,47,100,0.4)]"
+      style={{ borderLeftColor: meta.color }}
     >
-      <div className="flex items-center justify-between gap-2">
-        <span
-          className="rounded px-1.5 py-0.5 text-[9px] font-semibold tracking-wide"
-          style={{ background: meta.bg, color: meta.text }}
-        >
-          {meta.short}
-        </span>
-        <span className="font-mono text-[10px] text-muted">{time}</span>
-      </div>
-      <p
-        className={[
-          "mt-1 font-medium leading-snug text-foreground/90",
-          expanded ? "text-sm" : compact ? "line-clamp-1 text-[11px]" : "line-clamp-2 text-[11px]",
-        ].join(" ")}
-      >
-        {post.title || post.caption || "Untitled post"}
-      </p>
-      {!compact && (
-        <div className="mt-1 flex items-center gap-1">
+      <div className="flex items-center justify-between gap-3 border-b border-border px-3 py-2">
+        <div className="flex items-center gap-2">
           <span
-            className="inline-block h-1.5 w-1.5 rounded-full"
-            style={{ background: status.dot }}
-          />
-          <span className="text-[9px] capitalize text-muted">
-            {status.label.toLowerCase()}
+            className="rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide"
+            style={{ background: meta.bg, color: meta.text }}
+          >
+            {meta.label}
           </span>
+          <StatusPill status={post.status} />
         </div>
-      )}
+        <span className="font-mono text-[11px] text-muted">{time}</span>
+      </div>
+      <div className="px-3 py-2.5">
+        {post.title && (
+          <p className="text-sm font-semibold">{post.title}</p>
+        )}
+        {post.caption && (
+          <p
+            className={[
+              "whitespace-pre-wrap text-xs leading-snug text-foreground/75",
+              post.title ? "mt-1" : "",
+            ].join(" ")}
+          >
+            {truncate(post.caption, 220)}
+          </p>
+        )}
+        {(linkCount > 0 || commentCount > 0) && (
+          <div className="mt-2 flex flex-wrap items-center gap-2 text-[10px] text-muted">
+            {linkCount > 0 && (
+              <span className="inline-flex items-center gap-1">
+                <LinkGlyph /> {linkCount} reference{linkCount === 1 ? "" : "s"}
+              </span>
+            )}
+            {commentCount > 0 && (
+              <span className="inline-flex items-center gap-1">
+                <CommentGlyph /> {commentCount} comment{commentCount === 1 ? "" : "s"}
+              </span>
+            )}
+          </div>
+        )}
+      </div>
     </button>
+  );
+}
+
+function StatusPill({ status }: { status: EnrichedPost["status"] }) {
+  const m = statusMeta[status];
+  return (
+    <span
+      className="inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[9px] font-medium"
+      style={{ background: `${m.dot}1a`, color: m.dot }}
+    >
+      <span className="inline-block h-1 w-1 rounded-full" style={{ background: m.dot }} />
+      {m.label}
+    </span>
   );
 }
 
@@ -831,7 +966,7 @@ function ymd(d: Date): string {
   return d.toISOString().slice(0, 10);
 }
 
-function postsOn(posts: Post[], d: Date): Post[] {
+function postsOn(posts: EnrichedPost[], d: Date): EnrichedPost[] {
   const key = ymd(d);
   return posts
     .filter((p) => p.scheduled_at.startsWith(key))
@@ -850,6 +985,11 @@ function formatRange(a: Date, b: Date): string {
   const mB = b.toLocaleDateString(undefined, { month: "short", timeZone: "UTC" });
   if (sameMonth) return `${mA} ${a.getUTCDate()}–${b.getUTCDate()}, ${a.getUTCFullYear()}`;
   return `${mA} ${a.getUTCDate()} – ${mB} ${b.getUTCDate()}, ${a.getUTCFullYear()}`;
+}
+
+function truncate(s: string, n: number): string {
+  if (s.length <= n) return s;
+  return s.slice(0, n).trim() + "…";
 }
 
 function ChevronIcon({ dir }: { dir: "left" | "right" }) {
@@ -889,6 +1029,23 @@ function PdfIcon() {
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5">
       <path d="M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8l-5-5z" />
       <path d="M14 3v5h5" />
+    </svg>
+  );
+}
+
+function LinkGlyph() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-2.5 w-2.5">
+      <path d="M10 14a4 4 0 005.66 0l3-3a4 4 0 10-5.66-5.66l-1 1" />
+      <path d="M14 10a4 4 0 00-5.66 0l-3 3a4 4 0 105.66 5.66l1-1" />
+    </svg>
+  );
+}
+
+function CommentGlyph() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-2.5 w-2.5">
+      <path d="M4 5h12a3 3 0 013 3v6a3 3 0 01-3 3H9l-4 3v-3H4a0 0 0 010 0V5z" />
     </svg>
   );
 }
