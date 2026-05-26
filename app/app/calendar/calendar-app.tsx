@@ -720,86 +720,130 @@ function PostChip({
   });
   const linkCount = post.reference_links?.length ?? 0;
   const commentCount = post.comments_count ?? 0;
+  const heading = post.title || post.caption || "Untitled post";
 
-  // Compact (month view): tight, 1-line, with subtle counters.
+  function bind(): React.HTMLAttributes<HTMLButtonElement> & {
+    draggable?: boolean;
+    onDragStart?: React.DragEventHandler<HTMLButtonElement>;
+    onDragEnd?: React.DragEventHandler<HTMLButtonElement>;
+  } {
+    if (!draggable) return {};
+    return {
+      draggable: true,
+      onDragStart: (e) => {
+        e.dataTransfer.effectAllowed = "move";
+        e.dataTransfer.setData("text/plain", post.id);
+        onDragStart?.();
+      },
+      onDragEnd: () => onDragEnd?.(),
+    };
+  }
+
+  /* ── COMPACT (month) — channel-tinted card, badge + status, 1-line title */
   if (density === "compact") {
     return (
       <button
         type="button"
         onClick={onClick}
-        draggable={draggable}
-        onDragStart={(e) => {
-          if (!draggable) return;
-          e.dataTransfer.effectAllowed = "move";
-          e.dataTransfer.setData("text/plain", post.id);
-          onDragStart?.();
+        {...bind()}
+        className="group/chip relative w-full overflow-hidden rounded-lg border text-left transition hover:-translate-y-0.5 hover:shadow-[0_10px_20px_-12px_rgba(14,47,100,0.35)]"
+        style={{
+          background: `linear-gradient(180deg, ${meta.color}14 0%, #ffffff 60%)`,
+          borderColor: `${meta.color}40`,
         }}
-        onDragEnd={() => onDragEnd?.()}
-        className="group/chip w-full rounded-md border-l-2 bg-white/70 px-2 py-1.5 text-left transition hover:-translate-y-0.5 hover:shadow-sm"
-        style={{ borderColor: meta.color }}
+        aria-label={`Edit post: ${heading}`}
       >
-        <div className="flex items-center justify-between gap-2">
-          <span
-            className="rounded px-1.5 py-0.5 text-[9px] font-semibold tracking-wide"
-            style={{ background: meta.bg, color: meta.text }}
-          >
-            {meta.short}
-          </span>
-          <span className="font-mono text-[10px] text-muted">{time}</span>
-        </div>
-        <p className="mt-1 line-clamp-1 text-[11px] font-medium leading-snug text-foreground/90">
-          {post.title || post.caption || "Untitled post"}
-        </p>
-        {(linkCount > 0 || commentCount > 0) && (
-          <div className="mt-0.5 flex items-center gap-2 text-[9px] text-muted">
+        <span
+          className="absolute left-0 top-0 h-full w-[3px]"
+          style={{ background: meta.color }}
+          aria-hidden
+        />
+        <div className="px-2 pt-1.5 pb-1.5 pl-2.5">
+          <div className="flex items-center justify-between gap-1.5">
             <span
-              className="inline-block h-1.5 w-1.5 rounded-full"
-              style={{ background: status.dot }}
-            />
-            {linkCount > 0 && (
-              <span className="inline-flex items-center gap-0.5">
-                <LinkGlyph /> {linkCount}
-              </span>
-            )}
-            {commentCount > 0 && (
-              <span className="inline-flex items-center gap-0.5">
-                <CommentGlyph /> {commentCount}
-              </span>
-            )}
+              className="inline-flex h-4 w-4 shrink-0 items-center justify-center rounded text-[8px] font-bold uppercase text-white"
+              style={{ background: meta.color }}
+              title={meta.label}
+            >
+              {meta.short}
+            </span>
+            <span className="font-mono text-[10px] text-foreground/65">{time}</span>
           </div>
-        )}
+          <p className="mt-1 line-clamp-1 text-[11px] font-semibold leading-snug text-foreground">
+            {heading}
+          </p>
+          <div className="mt-1 flex items-center justify-between gap-1.5 text-[9px]">
+            <span
+              className="inline-flex items-center gap-1 rounded-full px-1 py-0.5 font-medium"
+              style={{ background: `${status.dot}1f`, color: status.dot }}
+            >
+              <span
+                className="inline-block h-1 w-1 rounded-full"
+                style={{ background: status.dot }}
+              />
+              {status.label}
+            </span>
+            <span className="flex items-center gap-1.5 text-foreground/55">
+              {linkCount > 0 && (
+                <span className="inline-flex items-center gap-0.5">
+                  <LinkGlyph /> {linkCount}
+                </span>
+              )}
+              {commentCount > 0 && (
+                <span className="inline-flex items-center gap-0.5">
+                  <CommentGlyph /> {commentCount}
+                </span>
+              )}
+            </span>
+          </div>
+        </div>
       </button>
     );
   }
 
-  // Detailed (week view): more info — channel name, 2-line caption preview,
-  // status pill, counters.
+  /* ── DETAILED (week) — full content card with channel-tinted header band */
   if (density === "detailed") {
     return (
       <button
         type="button"
         onClick={onClick}
-        draggable={draggable}
-        onDragStart={(e) => {
-          if (!draggable) return;
-          e.dataTransfer.effectAllowed = "move";
-          e.dataTransfer.setData("text/plain", post.id);
-          onDragStart?.();
-        }}
-        onDragEnd={() => onDragEnd?.()}
-        className="block w-full rounded-lg border border-l-[3px] border-border bg-white text-left transition hover:-translate-y-0.5 hover:shadow-[0_15px_30px_-20px_rgba(14,47,100,0.4)]"
-        style={{ borderLeftColor: meta.color }}
+        {...bind()}
+        className="group/chip relative block w-full overflow-hidden rounded-xl border bg-white text-left transition hover:-translate-y-0.5 hover:shadow-[0_18px_36px_-22px_rgba(14,47,100,0.4)]"
+        style={{ borderColor: `${meta.color}3a` }}
+        aria-label={`Edit post: ${heading}`}
       >
-        <div className="flex items-center justify-between gap-2 border-b border-border px-2.5 py-1.5">
+        {/* Header band */}
+        <div
+          className="relative px-3 pt-2.5 pb-2"
+          style={{
+            background: `linear-gradient(135deg, ${meta.color}22 0%, ${meta.color}05 80%)`,
+          }}
+        >
+          <div className="flex items-start justify-between gap-2">
+            <span
+              className="inline-flex items-center gap-1.5 rounded-full bg-white/85 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide backdrop-blur"
+              style={{ color: meta.text }}
+            >
+              <span
+                className="inline-block h-1.5 w-1.5 rounded-full"
+                style={{ background: meta.color }}
+              />
+              {meta.label}
+            </span>
+            <span className="font-mono text-[10px] text-foreground/65">{time}</span>
+          </div>
+          {/* Watermark of channel mark in lower right */}
           <span
-            className="rounded px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide"
-            style={{ background: meta.bg, color: meta.text }}
+            aria-hidden
+            className="pointer-events-none absolute -bottom-1.5 right-1.5 select-none text-[28px] font-bold leading-none"
+            style={{ color: `${meta.color}1f` }}
           >
-            {meta.label}
+            {meta.short}
           </span>
-          <span className="font-mono text-[10px] text-muted">{time}</span>
         </div>
-        <div className="px-2.5 py-2">
+
+        {/* Body */}
+        <div className="px-3 py-2.5">
           {post.title && (
             <p className="line-clamp-1 text-[12px] font-semibold leading-snug">
               {post.title}
@@ -808,22 +852,26 @@ function PostChip({
           {post.caption && (
             <p
               className={[
-                "text-[10.5px] leading-snug text-foreground/70",
-                post.title ? "mt-0.5 line-clamp-2" : "line-clamp-3",
+                "text-[11px] leading-snug text-foreground/70",
+                post.title ? "mt-1 line-clamp-2" : "line-clamp-3",
               ].join(" ")}
             >
               {post.caption}
             </p>
           )}
-          <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
-            <StatusPill status={post.status} />
+        </div>
+
+        {/* Footer */}
+        <div className="flex items-center justify-between gap-2 border-t border-border bg-subtle/30 px-3 py-1.5">
+          <StatusPill status={post.status} />
+          <div className="flex items-center gap-2 text-[10px] text-foreground/60">
             {linkCount > 0 && (
-              <span className="inline-flex items-center gap-0.5 rounded-full bg-subtle/60 px-1.5 py-0.5 text-[9px] text-foreground/70">
+              <span className="inline-flex items-center gap-1">
                 <LinkGlyph /> {linkCount}
               </span>
             )}
             {commentCount > 0 && (
-              <span className="inline-flex items-center gap-0.5 rounded-full bg-subtle/60 px-1.5 py-0.5 text-[9px] text-foreground/70">
+              <span className="inline-flex items-center gap-1">
                 <CommentGlyph /> {commentCount}
               </span>
             )}
@@ -833,54 +881,105 @@ function PostChip({
     );
   }
 
-  // Rich (day view): big card with everything.
+  /* ── RICH (day) — full media-card style with hero band */
   return (
     <button
       type="button"
       onClick={onClick}
-      className="block w-full rounded-xl border border-l-[3px] border-border bg-white text-left transition hover:-translate-y-0.5 hover:shadow-[0_20px_40px_-25px_rgba(14,47,100,0.4)]"
-      style={{ borderLeftColor: meta.color }}
+      className="group/chip block w-full overflow-hidden rounded-2xl border bg-white text-left transition hover:-translate-y-0.5 hover:shadow-[0_28px_50px_-25px_rgba(14,47,100,0.45)]"
+      style={{ borderColor: `${meta.color}3a` }}
+      aria-label={`Edit post: ${heading}`}
     >
-      <div className="flex items-center justify-between gap-3 border-b border-border px-3 py-2">
-        <div className="flex items-center gap-2">
-          <span
-            className="rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide"
-            style={{ background: meta.bg, color: meta.text }}
-          >
-            {meta.label}
-          </span>
+      {/* Hero band */}
+      <div
+        className="relative h-16 px-4 pt-3"
+        style={{
+          background: `linear-gradient(135deg, ${meta.color}26, ${meta.color}08 75%)`,
+        }}
+      >
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <span
+              className="inline-flex h-7 w-7 items-center justify-center rounded-lg text-[11px] font-bold text-white"
+              style={{ background: meta.color }}
+            >
+              {meta.short}
+            </span>
+            <div>
+              <p
+                className="text-[11px] font-semibold uppercase tracking-wider"
+                style={{ color: meta.text }}
+              >
+                {meta.label}
+              </p>
+              <p className="font-mono text-[10px] text-foreground/65">{time}</p>
+            </div>
+          </div>
           <StatusPill status={post.status} />
         </div>
-        <span className="font-mono text-[11px] text-muted">{time}</span>
+        <span
+          aria-hidden
+          className="pointer-events-none absolute -bottom-2 right-3 select-none text-[44px] font-extrabold leading-none"
+          style={{ color: `${meta.color}1a` }}
+        >
+          {meta.short}
+        </span>
       </div>
-      <div className="px-3 py-2.5">
+
+      {/* Body */}
+      <div className="space-y-2 px-4 py-3">
         {post.title && (
-          <p className="text-sm font-semibold">{post.title}</p>
+          <p className="text-sm font-semibold leading-snug">{post.title}</p>
         )}
         {post.caption && (
           <p
             className={[
               "whitespace-pre-wrap text-xs leading-snug text-foreground/75",
-              post.title ? "mt-1" : "",
+              post.title ? "" : "mt-0",
             ].join(" ")}
           >
             {truncate(post.caption, 220)}
           </p>
         )}
-        {(linkCount > 0 || commentCount > 0) && (
-          <div className="mt-2 flex flex-wrap items-center gap-2 text-[10px] text-muted">
-            {linkCount > 0 && (
-              <span className="inline-flex items-center gap-1">
-                <LinkGlyph /> {linkCount} reference{linkCount === 1 ? "" : "s"}
-              </span>
+
+        {linkCount > 0 && (
+          <ul className="flex flex-wrap gap-1.5 pt-1">
+            {post.reference_links.slice(0, 3).map((link, idx) => (
+              <li key={`${link.url}-${idx}`}>
+                <span className="inline-flex max-w-[160px] items-center gap-1 rounded-full bg-subtle/70 px-2 py-0.5 text-[10px] text-foreground/70">
+                  <span aria-hidden>🔗</span>
+                  <span className="truncate">{link.label || hostFromUrl(link.url)}</span>
+                </span>
+              </li>
+            ))}
+            {linkCount > 3 && (
+              <li>
+                <span className="inline-flex items-center rounded-full bg-subtle/70 px-2 py-0.5 text-[10px] text-foreground/70">
+                  +{linkCount - 3}
+                </span>
+              </li>
             )}
-            {commentCount > 0 && (
-              <span className="inline-flex items-center gap-1">
-                <CommentGlyph /> {commentCount} comment{commentCount === 1 ? "" : "s"}
-              </span>
-            )}
-          </div>
+          </ul>
         )}
+      </div>
+
+      <div className="flex items-center justify-between gap-2 border-t border-border bg-subtle/40 px-4 py-2 text-[10px] text-foreground/65">
+        <span>
+          {commentCount === 0 && linkCount === 0
+            ? "No activity yet"
+            : [
+                linkCount > 0 && `${linkCount} reference${linkCount === 1 ? "" : "s"}`,
+                commentCount > 0 && `${commentCount} comment${commentCount === 1 ? "" : "s"}`,
+              ]
+                .filter(Boolean)
+                .join(" · ")}
+        </span>
+        <span
+          aria-hidden
+          className="text-foreground/40 transition group-hover/chip:translate-x-0.5 group-hover/chip:text-brand-700"
+        >
+          Open →
+        </span>
       </div>
     </button>
   );
@@ -890,13 +989,24 @@ function StatusPill({ status }: { status: EnrichedPost["status"] }) {
   const m = statusMeta[status];
   return (
     <span
-      className="inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[9px] font-medium"
-      style={{ background: `${m.dot}1a`, color: m.dot }}
+      className="inline-flex items-center gap-1 rounded-full bg-white/85 px-2 py-0.5 text-[10px] font-medium backdrop-blur"
+      style={{ color: m.dot, boxShadow: `inset 0 0 0 1px ${m.dot}33` }}
     >
-      <span className="inline-block h-1 w-1 rounded-full" style={{ background: m.dot }} />
+      <span
+        className="inline-block h-1.5 w-1.5 rounded-full"
+        style={{ background: m.dot }}
+      />
       {m.label}
     </span>
   );
+}
+
+function hostFromUrl(url: string): string {
+  try {
+    return new URL(url).hostname.replace(/^www\./, "");
+  } catch {
+    return url;
+  }
 }
 
 function DropCell({
